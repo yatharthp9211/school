@@ -1,5 +1,5 @@
 // js/api.js — fetch wrapper + typed API methods
-import { API } from './config.js';
+import { API } from './config.js?v=8';
 import { Auth } from './auth.js';
 
 async function fetchApi(url, options = {}) {

@@ -2,7 +2,7 @@
 import { router } from './router.js';
 import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js';
 import { Auth } from './auth.js';
-import { api } from './api.js';
+import { api } from './api.js?v=8';
 import { showToast } from './components.js';
 
 // ---------------------------------------------------------------------------
