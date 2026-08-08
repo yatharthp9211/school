@@ -2,7 +2,7 @@
 import { CONFIG } from '../js/config.js';
 import { api } from '../js/api.js';
 import { Auth } from '../js/auth.js';
-import { Navbar, showToast, esc } from '../js/components.js?v=4';
+import { Navbar, showToast, esc } from '../js/components.js?v=9';
 
 const DRAFT_KEY = 'democrate_complaint_draft';
 const MIN_LEN = 20;

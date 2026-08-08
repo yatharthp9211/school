@@ -40,10 +40,17 @@ export function loadSession() {
         const raw = localStorage.getItem(SESSION_KEY);
         if (raw) {
             const d = JSON.parse(raw);
-            if (d && d.token) {
+            if (d && d.token && d.user) {
                 state.token = d.token;
-                state.user = d.user || null;
+                state.user = d.user;
                 return true;
+            }
+            // Partial/corrupt session (token but no user, or unreadable):
+            // purge it so the app never treats the user as half-logged-in.
+            if (d && d.token) {
+                localStorage.removeItem(SESSION_KEY);
+                state.token = null;
+                state.user = null;
             }
         }
     } catch (e) { /* corrupted session — ignore */ }

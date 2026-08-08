@@ -81,6 +81,14 @@ class Complaint(Base):
             + 10 * (self.teacher_up or 0) - 10 * (self.teacher_down or 0)
         )
 
+    # Expose the weighted score under the API's `score` field. Pydantic's
+    # from_attributes reads properties, so ComplaintResponse.score now carries
+    # the real value instead of silently defaulting to 0 (the ORM previously
+    # had no `score` attribute).
+    @property
+    def score(self) -> int:
+        return self.weighted_score()
+
 
 class VoteType(str, enum.Enum):
     UPVOTE = "upvote"

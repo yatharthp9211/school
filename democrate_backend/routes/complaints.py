@@ -96,6 +96,13 @@ def vote_complaint(
     if not complaint:
         raise HTTPException(status_code=404, detail="Complaint not found")
 
+    # Banned accounts cannot vote; admins moderate instead of voting (their vote
+    # would pollute the student/teacher moderation signals).
+    if current_user.is_banned:
+        raise HTTPException(status_code=403, detail="Your account has been restricted from voting.")
+    if current_user.role == models.Role.ADMIN:
+        raise HTTPException(status_code=400, detail="Administrators cannot vote.")
+
     # State machine: only verified, public complaints accept votes.
     if complaint.status not in (models.ComplaintStatus.PUBLISHED, models.ComplaintStatus.VOTING):
         raise HTTPException(status_code=400, detail=f"Voting is not allowed on {complaint.status.value} complaints.")

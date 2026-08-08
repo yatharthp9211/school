@@ -18,12 +18,31 @@ auth_limiter = SlidingWindowLimiter(settings.AUTH_RATE_LIMIT, settings.RATE_WIND
 general_limiter = SlidingWindowLimiter(settings.GENERAL_RATE_LIMIT, settings.RATE_WINDOW_SECONDS)
 
 
+# Immediate peers whose X-Forwarded-For we trust. nginx runs on this same host
+# (loopback), so requests arriving from anywhere else may carry attacker-forged
+# XFF and must be keyed on their TCP peer instead.
+TRUSTED_PROXIES = {"127.0.0.1", "::1", "localhost"}
+
+
 def client_ip(request: Request) -> str:
-    # Behind a trusted proxy (Cloudflare), X-Forwarded-For carries the real client.
+    # Cloudflare sets CF-Connecting-IP to the true client address and overwrites
+    # it per request, so it cannot be spoofed by the caller. Highest authority.
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip and cf_ip.strip():
+        return cf_ip.strip()
+
+    # Behind our own nginx, $proxy_add_x_forwarded_for appends the real
+    # $remote_addr as the LAST element. Take the final entry — never the
+    # client-supplied head, which an attacker can set to any value.
     xff = request.headers.get("x-forwarded-for")
-    if xff:
-        return xff.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    peer = request.client.host if request.client else None
+    if xff and peer in TRUSTED_PROXIES:
+        parts = [p.strip() for p in xff.split(",") if p.strip()]
+        if parts:
+            return parts[-1]
+
+    # Direct connection (dev / no proxy): any XFF is client-supplied — ignore it.
+    return peer or "unknown"
 
 
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):

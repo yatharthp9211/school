@@ -22,10 +22,11 @@ export function initials(name) {
 
 export function Avatar(name, opts = {}) {
     const { photo, sizeClass = '', tone = '' } = opts;
+    // name comes from user/teacher records — always escape it (XSS guard).
     if (photo) {
-        return `<span class="avatar ${sizeClass} ${tone}"><img src="${photo}" alt="${name}" loading="lazy" decoding="async"></span>`;
+        return `<span class="avatar ${sizeClass} ${tone}"><img src="${esc(photo)}" alt="${esc(name)}" loading="lazy" decoding="async"></span>`;
     }
-    return `<span class="avatar ${sizeClass} ${tone}" role="img" aria-label="${name}">${initials(name)}</span>`;
+    return `<span class="avatar ${sizeClass} ${tone}" role="img" aria-label="${esc(name)}">${initials(name)}</span>`;
 }
 
 export function Badge(category) {
@@ -79,10 +80,17 @@ export function showToast(message, type = 'success') {
     const isError = type === 'error';
     el.className = `toast ${isError ? 'error' : 'success'}`;
     el.setAttribute('role', 'status');
-    el.innerHTML = `
-        <span class="material-symbols-outlined">${isError ? 'error' : 'check_circle'}</span>
-        <span>${message}</span>
-    `;
+
+    // Build with createElement + textContent so user-controlled messages can
+    // never inject HTML (XSS guard).
+    const icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined';
+    icon.textContent = isError ? 'error' : 'check_circle';
+    const text = document.createElement('span');
+    text.textContent = message;
+
+    el.appendChild(icon);
+    el.appendChild(text);
     container.appendChild(el);
     setTimeout(() => {
         el.classList.add('leaving');
@@ -227,20 +235,26 @@ export function ComplaintCard(complaint, role, currentUserId) {
             </div>
         `;
     } else if (role === 'admin') {
-        const published = ['published', 'voting'].includes(status);
+        // MODERATED (admin-flagged, now private) is resolvable too — without this
+        // there was no path off a moderated complaint except archiving it.
+        const resolved = ['published', 'voting', 'moderated'].includes(status);
         actions = `
             <div class="flex items-center gap-2 mt-4 pt-4" style="border-top:1px solid var(--color-hairline)">
                 ${status === 'resolved'
                     ? '<span class="pill pill-resolved">Resolved</span>'
-                    : published
+                    : resolved
                         ? `<button class="btn btn-primary btn-sm" data-action="resolve" data-id="${complaint.id}">Mark Solved</button>
                            <button class="btn btn-soft btn-sm" data-action="archive" data-id="${complaint.id}">Archive</button>`
                         : `<button class="btn btn-soft btn-sm" data-action="archive" data-id="${complaint.id}">Archive</button>`}
             </div>
         `;
     } else {
-        // Voters (student / general public)
-        actions = `
+        // Voters (student / general public). No vote buttons on your own
+        // complaint (the backend rejects self-votes) or once voting is closed —
+        // they'd just 400 on every click.
+        const isOwn = !!currentUserId && complaint.author_id === currentUserId;
+        const votable = ['published', 'voting'].includes(status);
+        actions = (isOwn || !votable) ? '' : `
             <div class="flex items-center gap-3 mt-4 pt-4" style="border-top:1px solid var(--color-hairline)">
                 <button class="btn btn-ghost btn-sm" data-action="vote" data-id="${complaint.id}" data-type="upvote" aria-label="Upvote">
                     <span class="material-symbols-outlined">thumb_up</span><span data-vote-up>${upCount}</span>

@@ -17,6 +17,9 @@ def create_rating(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_student),
 ):
+    if current_user.is_banned:
+        raise HTTPException(status_code=403, detail="Your account has been restricted from submitting ratings.")
+
     teacher = crud.get_user(db, rating_in.teacher_id)
     if not teacher or teacher.role != models.Role.TEACHER:
         raise HTTPException(status_code=404, detail="Teacher not found")

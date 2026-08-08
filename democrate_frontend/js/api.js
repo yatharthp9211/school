@@ -1,19 +1,33 @@
 // js/api.js — fetch wrapper + typed API methods
-import { API } from './config.js?v=8';
-import { Auth } from './auth.js';
+import { API } from './config.js?v=9';
+import { Auth } from './auth.js?v=9';
+import { router } from './router.js?v=9';
+
+const DEFAULT_TIMEOUT = 15000; // ms — never let a hung request hang the UI forever
 
 async function fetchApi(url, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     const token = Auth.getToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
+    // Abort the request if the server stops answering, so the UI gets an error
+    // instead of a spinner that never resolves.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), options.timeout || DEFAULT_TIMEOUT);
+
     let res;
     try {
-        res = await fetch(url, { ...options, headers });
+        res = await fetch(url, { ...options, headers, signal: controller.signal });
     } catch (e) {
-        const err = new Error('Network error. Is the server running?');
+        // fetch() itself threw (DNS / connection refused / CORS / timeout) — no HTTP response.
+        const err = new Error(e && e.name === 'AbortError'
+            ? 'The server took too long to respond. Please try again.'
+            : 'Network error. Check your connection and try again.');
         err.status = 0;
+        err.cause = e; // keep the browser's real error for diagnosis
         throw err;
+    } finally {
+        clearTimeout(timer);
     }
 
     if (!res.ok) {
@@ -23,14 +37,37 @@ async function fetchApi(url, options = {}) {
             if (data && data.detail) detail = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
         } catch (e) { /* non-JSON error body */ }
 
-        if (res.status === 401) Auth.logout();
+        // A 401 only means "your session is gone" when we actually sent a token.
+        // A 401 on login/register (no token) is simply bad credentials — do NOT
+        // nuke the session or bounce the user for that.
+        if (res.status === 401 && token) {
+            const role = Auth.getCurrentUser()?.role || 'student';
+            Auth.logout();
+            // Navigate here so *every* 401-with-token path (route render, vote
+            // click, form submit) lands on the right login page — not just the
+            // ones a view's try/catch happens to rethrow.
+            router.navigate(`/login/${role}`);
+            const err = new Error('Your session has expired. Please sign in again.');
+            err.status = 401;
+            err.role = role;
+            throw err;
+        }
         const err = new Error(detail);
         err.status = res.status;
         throw err;
     }
 
     if (res.status === 204) return null;
-    return res.json();
+    try {
+        return await res.json();
+    } catch (e) {
+        // A 2xx that isn't JSON is still a contract violation — surface a
+        // structured error instead of a raw SyntaxError.
+        const err = new Error('The server returned an unexpected response.');
+        err.status = res.status;
+        err.cause = e;
+        throw err;
+    }
 }
 
 function qs(params) {

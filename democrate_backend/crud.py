@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import secrets
 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -114,7 +115,12 @@ def get_public_feed(db: Session, skip: int = 0, limit: int = 100):
 
 
 def get_teacher_feed(db: Session, teacher_id: str, skip: int = 0, limit: int = 100):
-    """Teacher sees: their assigned pending verification queue + the public feed."""
+    """Teacher sees: their OWN assigned pending verification queue + the public feed.
+
+    Pending complaints are private to their assigned verifier. Without this the
+    `teacher_id` argument was ignored and every teacher saw the whole pending
+    queue (a leak of unreviewed complaints across teachers).
+    """
     return (
         db.query(models.Complaint)
         .filter(
@@ -122,6 +128,11 @@ def get_teacher_feed(db: Session, teacher_id: str, skip: int = 0, limit: int = 1
             models.Complaint.status.in_(
                 [models.ComplaintStatus.PENDING, models.ComplaintStatus.PUBLISHED,
                  models.ComplaintStatus.VOTING, models.ComplaintStatus.RESOLVED]
+            ),
+            # Live complaints are shared; PENDING ones only with their verifier.
+            or_(
+                models.Complaint.status != models.ComplaintStatus.PENDING,
+                models.Complaint.verifier_teacher == teacher_id,
             ),
         )
         .order_by(models.Complaint.created_at.desc())

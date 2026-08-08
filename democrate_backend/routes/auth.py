@@ -12,6 +12,11 @@ from dependencies import get_current_user, client_ip
 
 router = APIRouter()
 
+# Precomputed once at import so a login attempt for a non-existent user still
+# pays one bcrypt verify (~200 ms). Otherwise response timing reveals which user
+# IDs are registered (user-enumeration oracle).
+_DUMMY_HASH = security.get_password_hash("not-a-real-password-for-timing")
+
 
 def _public_user(user: models.User) -> dict:
     """Minimal user object for the client. Never includes internal details/PII
@@ -65,7 +70,9 @@ def login(user_in: schemas.UserLogin, request: Request, db: Session = Depends(ge
     user = crud.get_user(db, user_id=user_in.username)
     ip = client_ip(request)
 
-    if not user or not security.verify_password(user_in.password, user.hashed_password):
+    # Verify against the stored hash — or the dummy hash when the user doesn't
+    # exist — so both paths take the same time.
+    if not user or not security.verify_password(user_in.password, user.hashed_password if user else _DUMMY_HASH):
         audit.log_action(db, user.id if user else None, audit.LOGIN_FAILURE,
                          details=f"role={user_in.role.value}", ip=ip)
         raise HTTPException(

@@ -1,17 +1,25 @@
 // views/admin_dashboard.js
 import { api } from '../js/api.js';
 import { Auth } from '../js/auth.js';
-import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=4';
+import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=9';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// OWASP CSV-injection guard: a cell starting with =, +, -, @, tab, or CR can
+// execute as a formula in Excel/Sheets. Neutralize it with a leading quote.
+function csvCell(v) {
+    const s = String(v ?? '');
+    const safe = s.replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
+    return `"${safe}"`;
+}
+
 function toCsv(complaints) {
     const header = 'id,category,status,score,created_at,text';
     const rows = complaints.map((c) =>
-        [c.id, c.category || '', c.status || '', c.score ?? 0, c.created_at || '', (c.text || '').replace(/"/g, '""')]
-            .map((v) => `"${v}"`).join(',')
+        [c.id, c.category || '', c.status || '', c.score ?? 0, c.created_at || '', c.text || '']
+            .map(csvCell).join(',')
     );
     return [header, ...rows].join('\n');
 }

@@ -2,7 +2,7 @@
 import { api } from '../js/api.js';
 import { Auth } from '../js/auth.js';
 import { router } from '../js/router.js';
-import { showToast, ThemeToggle } from '../js/components.js?v=4';
+import { showToast, ThemeToggle } from '../js/components.js?v=9';
 
 export function LoginView(role) {
     const meta = {

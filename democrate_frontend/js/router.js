@@ -54,7 +54,9 @@ export const router = {
         const { loader, options } = config;
 
         if (options.requiresAuth && !Auth.isLoggedIn()) {
-            this.navigate(options.loginPath || '/login/student');
+            // Send the user to the login page for their intended role when known.
+            const loginPath = options.loginPath || (options.role ? `/login/${options.role}` : '/login/student');
+            this.navigate(loginPath);
             return;
         }
 
@@ -86,6 +88,12 @@ export const router = {
             if (typeof view.init === 'function') view.init();
         } catch (e) {
             console.error('Route error:', e);
+            // A 401 thrown while rendering a protected view means the session
+            // died mid-page — send the user to login instead of stranding them.
+            if (e && e.status === 401) {
+                this.navigate(`/login/${e.role || 'student'}`);
+                return;
+            }
             this.renderMessage(
                 'Something went wrong',
                 (e && e.message) || 'The page could not be loaded. Please try again.',

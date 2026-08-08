@@ -115,8 +115,14 @@ def mark_resolved(
     complaint = crud.get_complaint(db, complaint_id)
     if not complaint:
         raise HTTPException(status_code=404, detail="Complaint not found")
-    if complaint.status not in (models.ComplaintStatus.PUBLISHED, models.ComplaintStatus.VOTING):
-        raise HTTPException(status_code=400, detail="Only published complaints can be marked as solved.")
+    # MODERATED (admin-flagged private) complaints also need a resolve path —
+    # otherwise they could only ever be archived.
+    if complaint.status not in (
+        models.ComplaintStatus.PUBLISHED,
+        models.ComplaintStatus.VOTING,
+        models.ComplaintStatus.MODERATED,
+    ):
+        raise HTTPException(status_code=400, detail="Only published or admin-managed complaints can be marked as solved.")
     complaint.status = models.ComplaintStatus.RESOLVED
     db.commit()
     audit.log_action(db, current_user.id, audit.COMPLAINT_RESOLVED, target=complaint_id,
@@ -159,6 +165,10 @@ def disable_user(
     user = crud.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    # Admins can never be disabled through the panel — a rogue admin could
+    # otherwise permanently lock out the school's other admins.
+    if user.role == models.Role.ADMIN:
+        raise HTTPException(status_code=400, detail="Administrator accounts cannot be disabled.")
     user.is_active = False
     db.commit()
     audit.log_action(db, current_user.id, audit.ACCOUNT_DISABLED, target=user_id,

@@ -11,7 +11,12 @@ pwd_context = CryptContext(schemes=["bcrypt", "sha256_crypt"], deprecated="auto"
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    # A corrupt/legacy/unparseable hash must never crash login (500). Treat it
+    # as a mismatch so the caller can report bad credentials cleanly.
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception:
+        return False
 
 
 def get_password_hash(password: str) -> str:

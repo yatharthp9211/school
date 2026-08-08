@@ -1,7 +1,7 @@
 // views/student_dashboard.js
 import { api } from '../js/api.js';
 import { Auth } from '../js/auth.js';
-import { Navbar, ComplaintCard, Empty, Stat, Footer, esc } from '../js/components.js?v=4';
+import { Navbar, ComplaintCard, Empty, Stat, Footer, esc } from '../js/components.js?v=9';
 
 export const StudentDashboardView = {
     render: async () => {
@@ -17,7 +17,7 @@ export const StudentDashboardView = {
         const resolved = my.filter((c) => (c.status || '').toLowerCase() === 'resolved').length;
 
         const cards = my.length
-            ? my.map((c) => ComplaintCard(c, 'student')).join('')
+            ? my.map((c) => ComplaintCard(c, 'student', user.id)).join('')
             : Empty('You have not filed any complaints yet.', 'inbox');
 
         return `

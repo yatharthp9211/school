@@ -1,17 +1,17 @@
 // js/app.js — bootstrap, routes (lazy views), global action dispatcher, drawer
-import { router } from './router.js';
-import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js';
-import { Auth } from './auth.js';
-import { api } from './api.js?v=8';
-import { showToast } from './components.js';
+import { router } from './router.js?v=9';
+import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=9';
+import { Auth } from './auth.js?v=9';
+import { api } from './api.js?v=9';
+import { showToast } from './components.js?v=9';
 
 // ---------------------------------------------------------------------------
 // Routes — views are lazy-loaded via dynamic import (code-split per route)
 // The loader is a function returning a Promise<view object {render, init?}>.
 // ---------------------------------------------------------------------------
-// ?v=4 busts the browser's module cache so view updates always take effect.
+// ?v=N busts the browser's module cache so view updates always take effect.
 // Bump the suffix whenever view files change.
-const V = 4;
+const V = 5;
 const load = (path, exportName, ...args) => () =>
     import(`../views/${path}.js?v=${V}`).then((m) => m[exportName](...args));
 

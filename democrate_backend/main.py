@@ -32,6 +32,10 @@ async def rate_limit_middleware(request: Request, call_next):
         # bucket (brute-force protection).
         if path.startswith(f"{settings.API_V1_STR}/auth/check-id"):
             limiter, bucket = general_limiter, "check-id"
+        elif path == f"{settings.API_V1_STR}/auth/me":
+            # Authenticated identity reads get their own bucket so every SPA
+            # page-load/refresh doesn't consume the strict login budget.
+            limiter, bucket = general_limiter, "me"
         elif path.startswith(f"{settings.API_V1_STR}/auth"):
             limiter, bucket = auth_limiter, "auth"
         else:
