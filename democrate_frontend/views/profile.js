@@ -1,7 +1,7 @@
-// views/profile.js — account overview (own data only, via /auth/me).
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
-import { Navbar, Avatar } from '../js/components.js?v=4';
+// views/profile.js?v=5 — account overview (own data only, via /auth/me).
+import { api } from '../js/api.js?v=5';
+import { Auth } from '../js/auth.js?v=5';
+import { Navbar, Avatar } from '../js/components.js?v=5';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

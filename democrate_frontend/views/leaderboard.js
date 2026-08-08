@@ -1,7 +1,7 @@
-// views/leaderboard.js — teacher leaderboard with podium, search, and subject filter.
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
-import { Navbar, TeacherCard, Avatar, Empty, Footer } from '../js/components.js?v=4';
+// views/leaderboard.js?v=5 — teacher leaderboard with podium, search, and subject filter.
+import { api } from '../js/api.js?v=5';
+import { Auth } from '../js/auth.js?v=5';
+import { Navbar, TeacherCard, Avatar, Empty, Footer } from '../js/components.js?v=5';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

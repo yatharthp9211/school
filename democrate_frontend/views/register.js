@@ -1,8 +1,8 @@
-// views/register.js — public student registration + key-gated teacher registration.
+// views/register.js?v=5 — public student registration + key-gated teacher registration.
 // There is NO public administrator registration (admins are provisioned out-of-band).
-import { api } from '../js/api.js';
-import { router } from '../js/router.js';
-import { showToast, ThemeToggle } from '../js/components.js?v=4';
+import { api } from '../js/api.js?v=5';
+import { router } from '../js/router.js?v=5';
+import { showToast, ThemeToggle } from '../js/components.js?v=5';
 
 function strengthScore(pw) {
     let s = 0;

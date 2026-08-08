@@ -1,6 +1,6 @@
-// js/router.js — hash router with lazy-loaded views, focus management, page transitions
-import { setView } from './state.js';
-import { Auth } from './auth.js';
+// js/router.js?v=5 — hash router with lazy-loaded views, focus management, page transitions
+import { setView } from './state.js?v=5';
+import { Auth } from './auth.js?v=5';
 
 function skeleton() {
     return `

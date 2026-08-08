@@ -1,9 +1,9 @@
-// js/app.js — bootstrap, routes (lazy views), global action dispatcher, drawer
-import { router } from './router.js';
-import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js';
-import { Auth } from './auth.js';
-import { api } from './api.js';
-import { showToast } from './components.js';
+// js/app.js?v=5 — bootstrap, routes (lazy views), global action dispatcher, drawer
+import { router } from './router.js?v=5';
+import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=5';
+import { Auth } from './auth.js?v=5';
+import { api } from './api.js?v=5';
+import { showToast } from './components.js?v=5';
 
 // ---------------------------------------------------------------------------
 // Routes — views are lazy-loaded via dynamic import (code-split per route)
@@ -13,25 +13,25 @@ import { showToast } from './components.js';
 // Bump the suffix whenever view files change.
 const V = 4;
 const load = (path, exportName, ...args) => () =>
-    import(`../views/${path}.js?v=${V}`).then((m) => m[exportName](...args));
+    import(`../views/${path}.js?v=5?v=${V}`).then((m) => m[exportName](...args));
 
-router.addRoute('/', () => import(`../views/landing.js?v=${V}`).then((m) => m.LandingView));
+router.addRoute('/', () => import(`../views/landing.js?v=5?v=${V}`).then((m) => m.LandingView));
 router.addRoute('/login/student', load('login', 'LoginView', 'student'));
 router.addRoute('/login/teacher', load('login', 'LoginView', 'teacher'));
 router.addRoute('/login/admin', load('login', 'LoginView', 'admin'));
 router.addRoute('/register/student', load('register', 'RegisterView', 'student'));
 router.addRoute('/register/teacher', load('register', 'RegisterView', 'teacher'));
 
-router.addRoute('/student', () => import('../views/student_dashboard.js').then((m) => m.StudentDashboardView), { requiresAuth: true, role: 'student' });
-router.addRoute('/complaint', () => import('../views/complaint_form.js').then((m) => m.ComplaintFormView), { requiresAuth: true, role: 'student' });
-router.addRoute('/teacher', () => import('../views/teacher_dashboard.js').then((m) => m.TeacherDashboardView), { requiresAuth: true, role: 'teacher' });
-router.addRoute('/admin', () => import('../views/admin_dashboard.js').then((m) => m.AdminDashboardView), { requiresAuth: true, role: 'admin' });
-router.addRoute('/admin/complaints', () => import('../views/admin_complaints.js').then((m) => m.AdminComplaintsView), { requiresAuth: true, role: 'admin' });
-router.addRoute('/admin/audit', () => import('../views/admin_audit.js').then((m) => m.AdminAuditView), { requiresAuth: true, role: 'admin' });
-router.addRoute('/complaints', () => import('../views/complaints_list.js').then((m) => m.ComplaintsListView), { requiresAuth: true });
-router.addRoute('/leaderboard', () => import('../views/leaderboard.js').then((m) => m.LeaderboardView), { requiresAuth: true });
-router.addRoute('/ratings', () => import('../views/ratings.js').then((m) => m.RatingsView), { requiresAuth: true, role: 'student' });
-router.addRoute('/profile', () => import('../views/profile.js').then((m) => m.ProfileView), { requiresAuth: true });
+router.addRoute('/student', () => import('../views/student_dashboard.js?v=5').then((m) => m.StudentDashboardView), { requiresAuth: true, role: 'student' });
+router.addRoute('/complaint', () => import('../views/complaint_form.js?v=5').then((m) => m.ComplaintFormView), { requiresAuth: true, role: 'student' });
+router.addRoute('/teacher', () => import('../views/teacher_dashboard.js?v=5').then((m) => m.TeacherDashboardView), { requiresAuth: true, role: 'teacher' });
+router.addRoute('/admin', () => import('../views/admin_dashboard.js?v=5').then((m) => m.AdminDashboardView), { requiresAuth: true, role: 'admin' });
+router.addRoute('/admin/complaints', () => import('../views/admin_complaints.js?v=5').then((m) => m.AdminComplaintsView), { requiresAuth: true, role: 'admin' });
+router.addRoute('/admin/audit', () => import('../views/admin_audit.js?v=5').then((m) => m.AdminAuditView), { requiresAuth: true, role: 'admin' });
+router.addRoute('/complaints', () => import('../views/complaints_list.js?v=5').then((m) => m.ComplaintsListView), { requiresAuth: true });
+router.addRoute('/leaderboard', () => import('../views/leaderboard.js?v=5').then((m) => m.LeaderboardView), { requiresAuth: true });
+router.addRoute('/ratings', () => import('../views/ratings.js?v=5').then((m) => m.RatingsView), { requiresAuth: true, role: 'student' });
+router.addRoute('/profile', () => import('../views/profile.js?v=5').then((m) => m.ProfileView), { requiresAuth: true });
 
 // ---------------------------------------------------------------------------
 // Drawer (mobile nav)

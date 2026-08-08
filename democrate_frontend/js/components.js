@@ -1,6 +1,6 @@
-// js/components.js — reusable UI components (module exports only, no window globals)
-import { CONFIG } from './config.js';
-import { state } from './state.js';
+// js/components.js?v=5 — reusable UI components (module exports only, no window globals)
+import { CONFIG } from './config.js?v=5';
+import { state } from './state.js?v=5';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -95,7 +95,7 @@ export function showToast(message, type = 'success') {
 // ---------------------------------------------------------------------------
 
 // Dark-mode toggle button. Renders with the current theme's icon; the global
-// click dispatcher (app.js) handles the actual toggle + icon sync. Add to any
+// click dispatcher (app.js?v=5) handles the actual toggle + icon sync. Add to any
 // navbar so the toggle exists on every page, logged in or not.
 export function ThemeToggle() {
     const dark = state.theme === 'dark';

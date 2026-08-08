@@ -1,7 +1,7 @@
-// views/admin_dashboard.js
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
-import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=4';
+// views/admin_dashboard.js?v=5
+import { api } from '../js/api.js?v=5';
+import { Auth } from '../js/auth.js?v=5';
+import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=5';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
