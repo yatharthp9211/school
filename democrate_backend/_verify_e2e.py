@@ -96,24 +96,24 @@ check("role:ADMIN ignored (student created)", st in (200, 400) and r.get("role")
 # 2. Conflict of interest + complaint creation
 # ---------------------------------------------------------------------------
 print("\n=== 2. Complaint creation ===")
-st, r = req("POST", "/complaints/", {
+st, r = req("POST", "/complaints", {
     "text": "A sufficiently long report to pass the twenty character minimum test.",
     "category": "Harassment", "target_teacher": "T-101", "verifier_teacher": "T-101",
 }, token=STU)
 check("verifier == target rejected", st == 400, f"st={st}")
 
-st, r = req("POST", "/complaints/", {
+st, r = req("POST", "/complaints", {
     "text": "Verifier must be a real teacher account that exists.",
     "category": "Harassment", "verifier_teacher": "ghost_teacher",
 }, token=STU)
 check("nonexistent verifier rejected", st == 400, f"st={st}")
 
-st, priv = req("POST", "/complaints/", {
+st, priv = req("POST", "/complaints", {
     "text": "A private report that goes straight to the administration desk.",
     "category": "Safety", "is_private": True,
 }, token=STU)
 check("private complaint created", st == 200 and priv.get("id"), f"st={st}")
-st, fc = req("GET", "/complaints/", token=STU)
+st, fc = req("GET", "/complaints", token=STU)
 check("private absent from public feed", priv.get("id") not in [c["id"] for c in fc], f"{fc[:1]}")
 
 # ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ check("private absent from public feed", priv.get("id") not in [c["id"] for c in
 # ---------------------------------------------------------------------------
 print("\n=== 3. Voting / state machine ===")
 CID = None
-st, comp = req("POST", "/complaints/", {
+st, comp = req("POST", "/complaints", {
     "text": "The corridor lighting is out and students are navigating in the dark.",
     "category": "Infrastructure", "target_teacher": "T-101", "verifier_teacher": "e2e_teacher",
 }, token=STU)
@@ -150,7 +150,7 @@ if st == 200:
     st, _ = req("POST", f"/complaints/{CID}/vote", {"type": "downvote"}, token=OTH)
     check("duplicate vote blocked", st == 400, f"st={st}")
 
-    st, fc = req("GET", "/complaints/", token=STU)
+    st, fc = req("GET", "/complaints", token=STU)
     check("published appears in public feed", CID in [c["id"] for c in fc], f"{[c['id'] for c in fc]}")
 
     st, mine = req("GET", "/complaints/mine", token=STU)
@@ -164,7 +164,7 @@ if st == 200:
 print("\n=== 4. Moderation flow ===")
 
 def make_flagged(label):
-    st, comp = req("POST", "/complaints/", {
+    st, comp = req("POST", "/complaints", {
         "text": f"Automated moderation scenario {label} — lights out in the lab building repeatedly.",
         "category": "Infrastructure", "target_teacher": "T-102", "verifier_teacher": "e2e_teacher",
     }, token=STU)
@@ -175,7 +175,7 @@ def make_flagged(label):
     return cid
 
 cA = make_flagged("A")
-st, fc = req("GET", "/complaints/", token=STU)
+st, fc = req("GET", "/complaints", token=STU)
 check("flagged absent from public feed", cA not in [c["id"] for c in fc], f"st={st}")
 
 st, flagged = req("GET", "/admin/flagged", token=ADMIN)
@@ -186,7 +186,7 @@ check("student denied admin flagged", st == 403, f"st={st}")
 
 st, r = req("POST", f"/admin/moderate/{cA}", {"action": "legitimate"}, token=ADMIN)
 check("moderate legitimate -> published", st == 200 and r.get("status") == "published", f"st={st} {r}")
-st, fc = req("GET", "/complaints/", token=STU)
+st, fc = req("GET", "/complaints", token=STU)
 check("restored complaint back in feed", cA in [c["id"] for c in fc], f"st={st}")
 
 cids = [make_flagged("B1"), make_flagged("B2"), make_flagged("B3"), make_flagged("B4"), make_flagged("B5")]
@@ -199,13 +199,13 @@ check("false complaints carry is_false", all(c.get("is_false") for c in mine if 
 st, r = req("GET", "/auth/me", token=STU)
 check("author reached false_count 5", r.get("false_count") == 5 and r.get("is_banned") is True, f"{r}")
 
-st, r = req("POST", "/complaints/", {
+st, r = req("POST", "/complaints", {
     "text": "A banned author trying to file yet another new complaint report here.",
     "category": "Other", "verifier_teacher": "e2e_teacher",
 }, token=STU)
 check("banned author cannot submit", st == 403, f"st={st}")
 
-st, lb = req("GET", "/leaderboard/")
+st, lb = req("GET", "/leaderboard")
 row = next((t for t in lb if t["id"] == "e2e_teacher"), None)
 check("verifier penalty recorded", row and row["penaltyCount"] >= 5, f"{row}")
 
@@ -217,13 +217,13 @@ check("audit has COMPLAINT_FALSE", any("complaint_false" in a.lower() for a in a
 # 5. Ratings (uses the author account; happens before any ban takes effect)
 # ---------------------------------------------------------------------------
 print("\n=== 5. Ratings ===")
-st, r = req("POST", "/ratings/", {"teacher_id": "T-101", "rating": 4, "tags": "Helpful,Clear"}, token=STU)
+st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 4, "tags": "Helpful,Clear"}, token=STU)
 check("rating submitted", st == 200, f"st={st}")
-st, r = req("POST", "/ratings/", {"teacher_id": "T-101", "rating": 6, "tags": "Helpful"}, token=STU)
+st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 6, "tags": "Helpful"}, token=STU)
 check("rating >5 rejected", st == 422, f"st={st}")
-st, r = req("POST", "/ratings/", {"teacher_id": "T-101", "rating": 2, "tags": "NotAllowed,Helpful"}, token=STU)
+st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 2, "tags": "NotAllowed,Helpful"}, token=STU)
 check("rating upsert + tag sanitize", st == 200, f"st={st} {r}")
-st, lb = req("GET", "/leaderboard/")
+st, lb = req("GET", "/leaderboard")
 row = next((t for t in lb if t["id"] == "T-101"), None)
 check("leaderboard reflects rating", row and row["rating"] > 0 and row["totalRatings"] >= 1, f"{row}")
 
