@@ -118,7 +118,8 @@ document.addEventListener('click', async (e) => {
         case 'reject':
             btn.disabled = true;
             try {
-                const res = await api.verifyComplaint(el.dataset.id, action);
+                const apiAction = action === 'verify' ? 'approve' : 'reject';
+                const res = await api.verifyComplaint(el.dataset.id, apiAction);
                 showToast(res.message || (action === 'verify' ? 'Complaint published.' : 'Complaint rejected.'));
                 await router.refresh();
             } catch (err) {
