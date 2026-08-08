@@ -46,10 +46,8 @@ export const CONFIG = {
 };
 
 // API Configuration
-// Use 127.0.0.1 (not localhost): on Windows localhost can resolve to ::1 first
-// while uvicorn binds IPv4 only, making requests flaky/slow. The backend's
-// CORS allowlist includes 127.0.0.1:5000 and the static-server ports below.
-const API_BASE = 'http://127.0.0.1:5000/api/v1';
+// Use relative path for API so it automatically works on local, network, and production domains.
+const API_BASE = '/api/v1';
 export const API = {
     BASE: API_BASE,
     LOGIN: `${API_BASE}/auth/login`,
