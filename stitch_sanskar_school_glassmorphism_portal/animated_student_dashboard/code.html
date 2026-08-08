@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sanskar Global - Student Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#80fd83",
+                        "primary": "#006b1c",
+                        "tertiary-container": "#158700",
+                        "background": "#f5faff",
+                        "surface-container": "#def0ff",
+                        "on-secondary-fixed": "#400010",
+                        "surface-container-highest": "#cce6fa",
+                        "inverse-surface": "#193342",
+                        "on-secondary-fixed-variant": "#91022f",
+                        "surface-tint": "#006e1d",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#005314",
+                        "on-tertiary-fixed-variant": "#095300",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#e4f3ff",
+                        "on-surface-variant": "#3e4a3b",
+                        "surface-container-high": "#d2ecff",
+                        "secondary-fixed-dim": "#ffb2b9",
+                        "surface-dim": "#c3def1",
+                        "surface-container-low": "#eaf5ff",
+                        "outline-variant": "#bdcab7",
+                        "on-tertiary-fixed": "#022100",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffdadc",
+                        "secondary-container": "#fd5e79",
+                        "on-background": "#011e2d",
+                        "outline": "#6e7b6a",
+                        "on-surface": "#011e2d",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#002204",
+                        "tertiary-fixed": "#78ff5b",
+                        "secondary": "#b22545",
+                        "on-primary-container": "#f7fff1",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#0f6b00",
+                        "tertiary-fixed-dim": "#59e23f",
+                        "surface-variant": "#cce6fa",
+                        "surface-bright": "#f5faff",
+                        "on-secondary-container": "#64001d",
+                        "on-tertiary-container": "#f8ffef",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#64df6a",
+                        "primary-container": "#008726",
+                        "inverse-primary": "#64df6a",
+                        "surface": "#f5faff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "margin-desktop": "40px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "display-lg-mobile": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background: linear-gradient(135deg, #f5faff 0%, #def0ff 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(23, 43, 63, 0.08);
+            border-radius: 1.5rem;
+        }
+        
+        /* Shimmer Button Effect */
+        .btn-shimmer {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .btn-shimmer::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(30deg) translateY(-50%);
+            transition: all 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .btn-shimmer:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .btn-shimmer:hover::after {
+            opacity: 1;
+            transform: rotate(30deg) translateY(50%);
+            animation: shimmer 1s forwards;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        .glass-btn-primary {
+            background-color: #006b1c;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 107, 28, 0.2);
+            transition: all 0.3s ease;
+        }
+        .glass-btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 25px rgba(0, 107, 28, 0.4);
+        }
+        
+        /* Generic Hover Interactions */
+        .hover-scale {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Entrance Animations */
+        .animate-enter {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="text-on-surface font-body-md relative overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-md dark:bg-surface-container/70 border-b border-white/40 shadow-[0_8px_32px_0_rgba(23,43,63,0.08)] animate-enter" style="animation-delay: 0.1s;">
+<div class="flex justify-between items-center h-16 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="flex items-center gap-4">
+<!-- Using placeholder for logo based on instructions, though a real logo is in the prompt image -->
+<img class="h-10 w-auto rounded-full bg-white/50 p-1 hover-scale" data-alt="A small, circular logo for Sanskar Global School, featuring modern green and blue tones with an abstract figure reaching upwards, reflecting a high-end educational institution's emblem in a light mode setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkVzmKLZzpy3OSIwEegVjixjK-Yi3ZrxBdlyrKiVPhS6_EEBG_FQqre3zDIUSN11DpStCvNB3eRESMjw7eZ8UZQWm0Qv91KzTvhdoF2dxF5f-M4bJTF8-fDFGQCs6XBWWuAnKbM1KOeYRYrTHHO00Om6Cz8OawBgtRCTmkZNyKVM6q4nAq_jn4QvOrav2nIZSHf2Q-bx3ii7Y0EAtfwcwRriHTqggag0TuwD3jKXnfDabS0ChqqzMX"/>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed hidden sm:block">Sanskar Global</span>
+</div>
+<!-- Web Navigation -->
+<div class="hidden md:flex items-center gap-8">
+<a class="text-primary dark:text-primary-fixed font-bold border-b-2 border-primary pb-1 font-label-md text-label-md hover:text-primary transition-colors duration-300" href="#">Dashboard</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant/80 font-label-md text-label-md hover:text-primary transition-colors duration-300 hover:drop-shadow-[0_0_8px_rgba(7,154,46,0.3)]" href="#">Complaints</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant/80 font-label-md text-label-md hover:text-primary transition-colors duration-300 hover:drop-shadow-[0_0_8px_rgba(7,154,46,0.3)]" href="#">Leaderboard</a>
+</div>
+<div class="flex items-center gap-4 text-primary dark:text-primary-fixed">
+<div class="hidden sm:flex items-center gap-2 bg-white/50 px-3 py-1 rounded-full border border-white/40 shadow-sm mr-2 hover-scale cursor-default">
+<span class="material-symbols-outlined text-[18px]">badge</span>
+<span class="font-label-sm text-label-sm font-semibold tracking-wider">STU-8492</span>
+</div>
+<button class="hover:text-primary transition-colors duration-300 hover:drop-shadow-[0_0_8px_rgba(7,154,46,0.3)] active:scale-95 transition-transform hover-scale">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:text-primary transition-colors duration-300 hover:drop-shadow-[0_0_8px_rgba(7,154,46,0.3)] active:scale-95 transition-transform hover-scale">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-28 pb-16 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Welcome & Primary Action (Spans full on mobile, 8 cols on desktop) -->
+<section class="lg:col-span-8 flex flex-col gap-6">
+<!-- Hero Card -->
+<div class="glass-panel p-8 relative overflow-hidden flex flex-col sm:flex-row justify-between items-center gap-6 animate-enter" style="animation-delay: 0.2s;">
+<!-- Decorative background elements -->
+<div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-12 -left-12 w-32 h-32 bg-secondary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-2">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary">Your Voice Matters.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">Report issues safely and anonymously. Track progress and contribute to a better school environment.</p>
+</div>
+<div class="relative z-10 shrink-0">
+<button class="glass-btn-primary btn-shimmer px-6 py-4 rounded-xl font-label-md text-label-md font-bold flex items-center gap-2 group">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform">campaign</span>
+                        Submit Complaint
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Content -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- My Recent Complaints -->
+<div class="glass-panel p-6 flex flex-col gap-4 animate-enter" style="animation-delay: 0.3s;">
+<div class="flex justify-between items-center border-b border-white/40 pb-3">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">history</span>
+                            My Complaints
+                        </h2>
+<a class="font-label-sm text-label-sm text-tertiary-container hover:underline hover:text-primary transition-colors" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Item 1 -->
+<div class="bg-white/40 rounded-lg p-3 border border-white/30 flex justify-between items-center hover:bg-white/70 transition-all hover:scale-[1.02] hover:shadow-md cursor-pointer duration-300">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold truncate max-w-[200px]">Cafeteria hygiene issue</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2 days ago</span>
+</div>
+<span class="px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm border border-primary/20 shadow-inner">Under Review</span>
+</div>
+<!-- Item 2 -->
+<div class="bg-white/40 rounded-lg p-3 border border-white/30 flex justify-between items-center hover:bg-white/70 transition-all hover:scale-[1.02] hover:shadow-md cursor-pointer duration-300">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold truncate max-w-[200px]">Library AC not working</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">1 week ago</span>
+</div>
+<span class="px-3 py-1 rounded-full bg-[#25b509]/10 text-[#25b509] font-label-sm text-label-sm border border-[#25b509]/30 shadow-inner">Resolved</span>
+</div>
+</div>
+</div>
+<!-- Stats Overview -->
+<div class="glass-panel p-6 flex flex-col gap-4 relative overflow-hidden animate-enter" style="animation-delay: 0.4s;">
+<div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 100% 100%, var(--tw-colors-primary-container) 0%, transparent 50%);"></div>
+<div class="relative z-10 flex flex-col h-full justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined">monitoring</span>
+                            Impact Stats
+                        </h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white/50 rounded-xl p-4 border border-white/40 flex flex-col items-center justify-center text-center backdrop-blur-sm hover:bg-white/70 transition-all hover:scale-[1.05] hover:shadow-md cursor-default duration-300">
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary font-bold">12</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Issues Resolved<br/>This Month</span>
+</div>
+<div class="bg-white/50 rounded-xl p-4 border border-white/40 flex flex-col items-center justify-center text-center backdrop-blur-sm hover:bg-white/70 transition-all hover:scale-[1.05] hover:shadow-md cursor-default duration-300">
+<span class="font-display-lg-mobile text-display-lg-mobile text-tertiary-container font-bold">45</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Community<br/>Upvotes</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Public Feed -->
+<div class="glass-panel p-6 flex flex-col gap-4 mt-2 animate-enter" style="animation-delay: 0.5s;">
+<div class="flex justify-between items-center border-b border-white/40 pb-3">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">forum</span>
+                        Public Dashboard
+                    </h2>
+<div class="flex gap-2">
+<button class="font-label-sm text-label-sm bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20 hover:bg-primary/20 transition-all hover:scale-105">Trending</button>
+<button class="font-label-sm text-label-sm bg-white/50 text-on-surface-variant px-3 py-1 rounded-full border border-white/40 hover:bg-white/70 transition-all hover:scale-105">Recent</button>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Feed Item -->
+<div class="bg-white/50 rounded-xl p-4 border border-white/40 shadow-sm hover:shadow-md transition-shadow duration-300">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-secondary/10 text-secondary border border-secondary/20 uppercase">Infrastructure</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Verified Issue</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4h ago</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-2">Water coolers on 3rd floor dispensing warm water</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 line-clamp-2">The water coolers near the science labs have not been working properly since Monday. It's summer and we need cold drinking water between classes.</p>
+<div class="flex justify-between items-center border-t border-white/40 pt-3">
+<div class="flex items-center gap-2 bg-white/60 rounded-full border border-white/50 p-1">
+<button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary/10 text-on-surface-variant hover:text-primary transition-all hover:scale-110 active:scale-95">
+<span class="material-symbols-outlined text-[20px]">thumb_up</span>
+</button>
+<span class="font-label-md text-label-md font-bold px-1">124</span>
+<button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-error/10 text-on-surface-variant hover:text-error transition-all hover:scale-110 active:scale-95">
+<span class="material-symbols-outlined text-[20px]">thumb_down</span>
+</button>
+</div>
+<span class="text-xs font-medium text-primary flex items-center gap-1 bg-primary/5 px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-[14px]">school</span> Admin Acknowledged
+                            </span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Sidebar (Spans 4 cols on desktop) -->
+<aside class="lg:col-span-4 flex flex-col gap-6">
+<!-- Teacher Leaderboard -->
+<div class="glass-panel p-6 flex flex-col gap-4 sticky top-24 animate-enter" style="animation-delay: 0.4s;">
+<div class="flex justify-between items-center border-b border-white/40 pb-3">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">workspace_premium</span>
+                        Top Mentors
+                    </h2>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2">Teachers rated highest for resolving student concerns this month.</p>
+<div class="flex flex-col gap-3">
+<!-- Leaderboard Item 1 -->
+<div class="bg-gradient-to-r from-primary/10 to-transparent rounded-lg p-3 border border-primary/20 flex items-center gap-3 relative overflow-hidden hover:scale-[1.02] transition-transform duration-300 cursor-pointer">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-lg"></div>
+<div class="w-10 h-10 rounded-full bg-white/80 border border-primary/30 flex items-center justify-center font-bold text-primary shadow-sm shrink-0">
+                            1
+                        </div>
+<div class="flex flex-col flex-grow">
+<span class="font-label-md text-label-md font-bold">Mr. A. Sharma</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mathematics</span>
+</div>
+<div class="flex items-center gap-1 text-[#25b509] bg-white/50 px-2 py-1 rounded-md border border-white/50">
+<span class="font-label-sm text-label-sm font-bold">4.9</span>
+<span class="material-symbols-outlined filled-icon text-[14px]">star</span>
+</div>
+</div>
+<!-- Leaderboard Item 2 -->
+<div class="bg-white/40 rounded-lg p-3 border border-white/30 flex items-center gap-3 hover:bg-white/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center font-bold text-on-surface-variant shrink-0">
+                            2
+                        </div>
+<div class="flex flex-col flex-grow">
+<span class="font-label-md text-label-md font-semibold">Mrs. R. Desai</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Physics</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant bg-white/50 px-2 py-1 rounded-md border border-white/50">
+<span class="font-label-sm text-label-sm font-bold">4.7</span>
+<span class="material-symbols-outlined filled-icon text-[14px] text-[#f59e0b]">star</span>
+</div>
+</div>
+<!-- Leaderboard Item 3 -->
+<div class="bg-white/40 rounded-lg p-3 border border-white/30 flex items-center gap-3 hover:bg-white/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center font-bold text-on-surface-variant shrink-0">
+                            3
+                        </div>
+<div class="flex flex-col flex-grow">
+<span class="font-label-md text-label-md font-semibold">Dr. S. Patil</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Chemistry</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant bg-white/50 px-2 py-1 rounded-md border border-white/50">
+<span class="font-label-sm text-label-sm font-bold">4.5</span>
+<span class="material-symbols-outlined filled-icon text-[14px] text-[#f59e0b]">star</span>
+</div>
+</div>
+</div>
+<button class="btn-shimmer mt-2 w-full py-2 border-2 border-primary/30 rounded-lg font-label-sm text-label-sm font-semibold text-primary hover:bg-primary/5 transition-colors">View Full Leaderboard</button>
+</div>
+<!-- Anonymity Notice -->
+<div class="bg-inverse-surface text-inverse-on-surface p-5 rounded-2xl shadow-lg border border-white/10 relative overflow-hidden animate-enter" style="animation-delay: 0.6s;">
+<div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #ffffff 10px, #ffffff 20px);"></div>
+<div class="relative z-10 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-fixed mt-1">shield_lock</span>
+<div>
+<h3 class="font-label-md text-label-md font-bold text-primary-fixed mb-1">100% Anonymous</h3>
+<p class="text-xs opacity-80 leading-relaxed">Your identity (STU-8492) is encrypted. The school administration only sees the content of your complaint, ensuring retaliation-free reporting.</p>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto bg-surface-container-low/50 backdrop-blur-md dark:bg-surface-container-lowest/10 border-t border-white/40 animate-enter" style="animation-delay: 0.7s;">
+<div class="flex flex-col md:flex-row justify-between items-center py-8 px-margin-mobile md:px-margin-desktop gap-4 max-w-container-max mx-auto w-full">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface dark:text-on-surface">Sanskar Global</span>
+<div class="flex gap-4">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">School Website</a>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 Sanskar Global School. All rights reserved. Secure &amp; Anonymous.</p>
+</div>
+</footer>
+<script>
+    // Intersection Observer for scroll animations (if elements are below fold)
+    document.addEventListener("DOMContentLoaded", function() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        // Pause animations initially if they are out of viewport to only play when scrolled to
+        document.querySelectorAll('.animate-enter').forEach(el => {
+            // Optional: for true scroll-based triggering if page was taller
+            // el.style.animationPlayState = 'paused'; 
+            // observer.observe(el);
+        });
+    });
+</script>
+</body></html>

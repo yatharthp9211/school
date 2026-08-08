@@ -1,0 +1,699 @@
+================================================================================
+DIGITAL ANONYMOUS COMPLAINT BOX
+Version 1.0
+Author: Yatharth Pandey
+================================================================================
+
+PROJECT GOAL
+------------
+
+Create an anonymous complaint platform where students can safely report problems
+without fear of discrimination while ensuring that false allegations are also
+handled through a reputation system.
+
+The system should eventually be scalable from a school deployment to a district,
+state and national level.
+
+================================================================================
+SYSTEM ARCHITECTURE
+================================================================================
+
+                User
+                  │
+                  ▼
+           Login Selection
+                  │
+     ┌────────────┼────────────┐
+     │            │            │
+Student      Teacher     Administrator
+     │            │            │
+     └────────────┼────────────┘
+                  ▼
+            Authentication
+                  │
+                  ▼
+             SQL Database
+                  │
+        ┌─────────┼─────────┐
+        │         │         │
+ Identity Table  Issues   Leaderboard
+                  │
+                  ▼
+      Local AI Zero-Shot Classifier
+                  │
+                  ▼
+           Administrative Dashboard
+
+================================================================================
+DATABASE DESIGN
+================================================================================
+
+TABLE 1 : IDENTITY
+
+Fields
+
+Primary Key
+------------
+UserID
+
+Columns
+-------
+Name
+Password(Hash)
+Category
+Student Roll Number
+Class
+Teacher Subject
+Classes Managed
+Account Status
+False Complaint Count
+Leaderboard Score
+Registration Date
+
+================================================================================
+
+TABLE 2 : ISSUES
+
+Primary Key
+-----------
+IssueID
+
+Columns
+-------
+Complaint Text
+
+Anonymous Student ID
+
+Teacher Selected For Verification
+
+Verification Status
+
+Verifier Teacher ID
+
+Student Upvotes
+
+Teacher Upvotes
+
+Student Downvotes
+
+Teacher Downvotes
+
+Weighted Score
+
+Status
+(Pending/Solved)
+
+AI Category
+
+Target Teacher
+
+Creation Time
+
+Last Updated
+
+================================================================================
+
+TABLE 3 : LEADERBOARD
+
+Primary Key
+-----------
+TeacherID
+
+Columns
+-------
+Teacher Name
+
+Overall Rating
+
+Total Ratings
+
+Positive Score
+
+Negative Score
+
+Verified Complaints
+
+Rejected Complaints
+
+Penalty Points
+
+Rank
+
+================================================================================
+LOGIN ALGORITHM
+================================================================================
+
+START
+
+Display
+
+1 Student Login
+2 Teacher Login
+3 Administrator Login
+
+IF Student Selected
+
+    IF Existing User
+
+        Login using
+            Unique ID
+            Password
+
+    ELSE
+
+        Ask
+            Name
+            Roll Number
+            Class
+            Password
+
+        Generate Unique Student ID
+
+        Save Identity
+
+ENDIF
+
+-----------------------------------------------------
+
+IF Teacher Selected
+
+    IF Existing User
+
+        Login
+
+    ELSE
+
+        Ask
+
+            Name
+            Subject
+            Managed Classes
+            Password
+
+        Generate Teacher ID
+
+        Save Identity
+
+ENDIF
+
+-----------------------------------------------------
+
+IF Administrator
+
+    Login using administrator credentials
+
+ENDIF
+
+================================================================================
+STUDENT DASHBOARD
+================================================================================
+
+Student can
+
+1 Submit Complaint
+
+2 Track Own Complaints
+
+3 Upvote Complaints
+
+4 Downvote Complaints
+
+5 Rate Teachers
+
+6 View Teacher Leaderboard
+
+================================================================================
+COMPLAINT SUBMISSION ALGORITHM
+================================================================================
+
+INPUT
+
+Complaint
+
+Target Teacher (Optional)
+
+Teacher chosen for verification
+
+Insert complaint
+
+Status = Pending
+
+Verification = Not Verified
+
+Student Votes = 0
+
+Teacher Votes = 0
+
+Run AI Classification
+
+Store Category
+
+Send Verification Request
+
+================================================================================
+TEACHER VERIFICATION ALGORITHM
+================================================================================
+
+Teacher receives pending requests.
+
+FOR every complaint
+
+Teacher reads complaint
+
+Teacher chooses
+
+Approve
+
+OR
+
+Reject
+
+IF Approve
+
+Verification = True
+
+Verifier Name Stored
+
+Complaint becomes public
+
+ENDIF
+
+IF Reject
+
+Verification = False
+
+Complaint hidden
+
+Student receives notification
+
+ENDIF
+
+================================================================================
+VOTING SYSTEM
+================================================================================
+
+Student Vote Weight
+
++1
+-1
+
+Teacher Vote Weight
+
++10
+-10
+
+Weighted Score
+
+=
+
+Student Votes
+
++
+
+10 × Teacher Votes
+
+================================================================================
+RANKING ALGORITHM
+================================================================================
+
+Sort complaints
+
+Descending by
+
+Weighted Score
+
+Highest score
+
+Displayed at top
+
+================================================================================
+FALSE COMPLAINT DETECTION
+================================================================================
+
+IF
+
+Weighted Score <= -50
+
+THEN
+
+Move complaint
+
+False Allegation Box
+
+Visible only to administrators
+
+Reveal
+
+Student Identity
+
+Verifier Teacher Identity
+
+Increase Student False Count
+
+Decrease Teacher Reputation
+
+================================================================================
+STUDENT BAN ALGORITHM
+================================================================================
+
+IF
+
+False Complaint Count >= 5
+
+THEN
+
+Student Account
+
+Status = Banned
+
+Student
+
+Cannot submit new complaints
+
+Student
+
+Can still login
+
+Can view previous complaints
+
+================================================================================
+TEACHER PENALTY ALGORITHM
+================================================================================
+
+Whenever
+
+Verified complaint becomes false
+
+Teacher
+
+Leaderboard Score
+
+=
+
+Score - 50
+
+================================================================================
+TEACHER LEADERBOARD
+================================================================================
+
+Every rating submitted
+
+Average Rating Updated
+
+Sort Teachers
+
+Highest Rating
+
+to
+
+Lowest Rating
+
+Display Rank
+
+================================================================================
+ADMINISTRATOR DASHBOARD
+================================================================================
+
+Administrator can
+
+View all complaints
+
+Filter using AI Category
+
+Pending
+
+Solved
+
+False Allegations
+
+Teacher Related
+
+Infrastructure
+
+Bullying
+
+Harassment
+
+Academic
+
+Mental Health
+
+Safety
+
+Other
+
+Administrator can
+
+Mark complaint solved
+
+Restore complaint
+
+Delete complaint
+
+View identities only for false allegations
+
+View leaderboard
+
+================================================================================
+LOCAL AI PIPELINE
+================================================================================
+
+Whenever complaint submitted
+
+↓
+
+Zero Shot Classification
+
+↓
+
+Categories
+
+Harassment
+
+Teacher Misconduct
+
+Infrastructure
+
+Bullying
+
+Academic
+
+Safety
+
+Mental Health
+
+Other
+
+↓
+
+Store category
+
+================================================================================
+SECURITY
+================================================================================
+
+Passwords stored as hashes.
+
+Unique IDs used instead of names.
+
+Student names hidden from all users.
+
+Teacher cannot see student identity.
+
+Only administrator can reveal identity after complaint is determined to be malicious according to system policy.
+
+SQL Injection Prevention
+
+Parameterized Queries
+
+Authentication Tokens
+
+Session Expiration
+
+Audit Logs
+
+================================================================================
+FUTURE ROADMAP
+================================================================================
+
+School
+
+↓
+
+District
+
+↓
+
+City
+
+↓
+
+State
+
+↓
+
+Country
+
+Additional Features
+
+Voice Complaints
+
+Image Uploads
+
+Evidence Upload
+
+Anonymous Messaging
+
+Mobile App
+
+AI Complaint Summarization
+
+Sentiment Analysis
+
+Duplicate Complaint Detection
+
+Fraud Detection
+
+Analytics Dashboard
+
+================================================================================
+END
+================================================================================
+
+
+
+================================================================================
+================================================================================
+part b of the algorithm 
+================================================================================
+================================================================================
+================================================================================
+ANONYMOUS SCHOOL COMPLAINT SYSTEM - ALGORITHM & LOGIC FLOW
+
+SYSTEM INITIALIZATION
+
+1.1 Initialize Web Server (e.g., Flask/Django).
+1.2 Initialize SQL Database with 3 tables:
+- Table 1: Identity (Name, ID, PasswordHash, Category, Class_Subject, Fake_Count, Is_Banned)
+- Table 2: Issues (Complaint_ID, Comment, Author_ID, Verifier_ID, Is_Verified, Student_Upvotes, Teacher_Upvotes, Student_Downvotes, Teacher_Downvotes, Status, AI_Category, Targeted_Teacher_ID)
+- Table 3: Leaderboard (Teacher_ID, Rating_Score, Positive_Resolutions, Penalties)
+1.3 Load local Zero-Shot Classification AI model on the server.
+
+AUTHENTICATION & REGISTRATION MODULE
+
+2.1 ON USER REGISTRATION:
+IF user selects "Student":
+Input Name, Roll Number, Class, Password.
+IF user selects "Teacher":
+Input Name, Teaching Subject, Classes Managed, Password.
+GENERATE Unique_ID (e.g., UUID or formatted string like 'STU-1234').
+HASH Password.
+INSERT into Identity table with Category = 'Student' or 'Teacher'.
+RETURN Unique_ID to user for future logins.
+
+2.2 ON USER LOGIN:
+Input Unique_ID and Password.
+FETCH record from Identity table where ID = Unique_ID.
+VERIFY PasswordHash.
+IF verified: Create active session based on Category.
+ELSE: Return "Invalid Credentials".
+
+COMPLAINT SUBMISSION & VERIFICATION MODULE
+
+3.1 STUDENT SUBMITS COMPLAINT:
+IF Student Is_Banned == TRUE:
+RETURN "Account banned from submitting complaints."
+PROMPT for: Complaint Text, Targeted Teacher (Optional), Verifying Teacher (Selected from list).
+PASS Complaint Text to Zero-Shot AI Model -> RETURN AI_Category.
+INSERT into Issues table:
+- Comment = Complaint Text
+- Author_ID = Student's Unique_ID (Kept hidden from UI)
+- Verifier_ID = Selected Teacher's Unique_ID
+- Is_Verified = FALSE
+- Status = 'Pending'
+- AI_Category = Returned AI Category
+
+3.2 TEACHER VERIFICATION PROCESS:
+FETCH all Issues where Verifier_ID = Logged-in Teacher's ID AND Is_Verified = FALSE.
+DISPLAY to Teacher.
+IF Teacher clicks "Approve":
+UPDATE Issues SET Is_Verified = TRUE.
+Complaint becomes visible on public dashboard.
+IF Teacher clicks "Reject":
+DELETE from Issues OR UPDATE Status = 'Rejected'.
+
+DASHBOARD & VOTING MODULE
+
+4.1 DISPLAY PUBLIC DASHBOARD:
+FETCH all Issues where Is_Verified = TRUE AND Status != 'Fake'.
+CALCULATE Total_Score for each issue:
+Total_Score = (Student_Upvotes * 1) + (Teacher_Upvotes * 10) - (Student_Downvotes * 1) - (Teacher_Downvotes * 10)
+SORT Issues by Total_Score DESC. (Highest scores appear on top).
+HIDE Author_ID in UI (Enforce Anonymity).
+
+4.2 PROCESSING A VOTE:
+INPUT Voter_Category (Student or Teacher) and Vote_Type (Upvote or Downvote).
+UPDATE Issues table incrementing the specific vote column.
+RECALCULATE Total_Score.
+
+// Check for Fake Allegation Threshold
+IF Total_Score <= -50:
+    TRIGGER Fake Allegation Protocol (See Section 5).
+
+
+FAKE ALLEGATION & PENALTY PROTOCOL
+
+5.1 IF COMPLAINT REACHES -50 SCORE:
+UPDATE Issues SET Status = 'Fake'.
+REMOVE complaint from Student and Teacher public dashboards.
+MOVE complaint to 'Fake Allegations' view in Administrative Dashboard.
+
+// Expose Identities to Admin
+UNMASK Author_ID and Verifier_ID to Administrators only.
+
+// Penalize Student
+UPDATE `Identity` SET Fake_Count = Fake_Count + 1 WHERE ID = Author_ID.
+IF Fake_Count > 5:
+    UPDATE `Identity` SET Is_Banned = TRUE WHERE ID = Author_ID.
+    
+// Penalize Verifying Teacher
+UPDATE `Leaderboard` SET Rating_Score = Rating_Score - 50 WHERE Teacher_ID = Verifier_ID.
+
+
+ADMINISTRATIVE MODULE
+
+6.1 ADMIN DASHBOARD:
+VIEW all Issues (Filtered by AI_Category, Status).
+VIEW 'Fake Allegations' list (with exposed Student and Teacher IDs).
+VIEW Teacher Leaderboard.
+
+6.2 RESOLVE COMPLAINT:
+IF Admin marks issue as "Solved":
+UPDATE Issues SET Status = 'Solved'.
+UPDATE Leaderboard SET Positive_Resolutions + 1 for associated Teacher/Target.
+
+LEADERBOARD MODULE
+
+7.1 DISPLAY LEADERBOARD:
+FETCH Leaderboard data joined with Identity table (for Teacher Names).
+CALCULATE Final Rating based on Base_Score + Student Ratings - Penalties.
+SORT by Final Rating DESC.
+DISPLAY publicly to Students and Teachers.
+================================================================================
+suggestions 
+================================================================================
+A Few Suggestions Before You Start Coding:
+Security is Paramount: Because you are handling extremely sensitive data (like allegations of inappropriate behavior), you must ensure passwords are encrypted (using bcrypt or similar). Do not store plain-text passwords.
+
+Session Security: Make sure that when you send the data to the front end (the HTML pages), the Author_ID is strictly removed from the JSON or template variables being sent to standard users. Anonymity must be enforced on the backend, not just hidden on the frontend via CSS.
+
+Database Relationships: Using SQL, utilize Foreign Keys linking your Issues and Leaderboard tables back to the Unique IDs in your Identity table to ensure data integrity.
+
+The only part I'd recommend changing is teacher verification. If a complaint is against a teacher, allowing a single teacher to verify it (especially one chosen by the student) could create bias or pressure. A more robust workflow would be:
+
+Student submits complaint anonymously.
+Complaint is assigned to 2–3 independent teachers (excluding the accused teacher) or a designated ethics committee.
+The complaint becomes public only after reaching a verification threshold (e.g., 2 approvals).
+Administrators make the final decision on disciplinary action, while the complaint itself can still be visible anonymously after verification.
+
+This makes the system fairer, reduces the chance of retaliation or favoritism, and would be much easier to justify to a school administration if you later propose deploying it.

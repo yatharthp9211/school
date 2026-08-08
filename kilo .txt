@@ -1,0 +1,286 @@
+# Democrate Website — Bug Bounty & Audit Report
+
+## Executive Summary
+The `democrate` platform is a functional full-stack anonymous complaint system, but it has **multiple critical security vulnerabilities**, **state management bugs**, **accessibility violations**, and **missing mobile navigation** that need immediate attention before any production deployment.
+
+---
+
+## 1. Backend Security Findings (Critical → Low)
+
+### Critical
+
+| # | Finding | File | Lines |
+|---|---------|------|-------|
+| 1.1 | **Unauthenticated Admin Creation** — `/auth/register` allows any caller to create an `ADMIN` role account | `routes/auth.py` | 13-18 |
+| 1.2 | **Hardcoded JWT Secret** — `SECRET_KEY` is hardcoded in source; repository exposure = total auth bypass | `config.py` | 9 |
+| 1.3 | **Hardcoded Weak Passwords** — `seed.py` hashes `admin123` / `teacher123` into DB | `seed.py` | 17, 37 |
+
+### High
+
+| # | Finding | File | Lines |
+|---|---------|------|-------|
+| 2.1 | **Public Leaderboard** — Unauthenticated endpoint exposes teacher metrics | `routes/leaderboard.py` | 10-11 |
+| 2.2 | **Private Complaints Visible to All** — `is_private` flag ignored; students can read admin-only complaints | `routes/complaints.py` | 23-31 |
+| 2.3 | **Race Condition in Voting** — SELECT/INSERT not atomic; concurrent votes create duplicates and lost updates | `routes/complaints.py`, `crud.py` | 48-57, 52-78 |
+| 2.4 | **State Machine Bypass (Verify)** — Verify endpoint jumps straight to `PUBLISHED`/`ARCHIVED`, skipping `VOTING` | `routes/complaints.py` | 74-79 |
+| 2.5 | **Admin Archive Bypasses State Machine** — Blindly sets `ARCHIVED` regardless of current state | `routes/admin.py` | 24-35 |
+| 2.6 | **No Duplicate Rating Prevention** — Students can submit unlimited ratings for the same teacher | `routes/ratings.py` | 12-23 |
+| 2.7 | **Voting on Invalid States** — Users can vote on `PENDING`/`ARCHIVED`/`RESOLVED` complaints | `routes/complaints.py` | 33-57 |
+| 2.8 | **Fake Anonymity Leak** — `anonymous_id = Anon-{user.id[:3]}X` directly reveals first 3 chars of user ID | `routes/complaints.py` | 18-20 |
+
+### Medium
+
+| # | Finding | File | Lines |
+|---|---------|------|-------|
+| 3.1 | **7-Day JWT Lifetime** — No refresh token; stolen tokens valid for a week | `config.py` | 11 |
+| 3.2 | **Weak Password Hashing** — Uses `sha256_crypt` instead of bcrypt/argon2 | `security.py` | 7 |
+| 3.3 | **No Password Complexity** — Accepts any string length; no complexity rules | `schemas.py`, `crud.py` | 16, 10-22 |
+| 3.4 | **User ID Enumeration** — `/auth/check-id/{user_id}` reveals valid IDs without auth | `routes/auth.py` | 20-23 |
+| 3.5 | **Sensitive Data in Login Response** — `details` field (PII/internal notes) returned to client | `routes/auth.py` | 44-49 |
+| 3.6 | **No Account Disable Mechanism** — Missing `is_active` flag; compromised accounts cannot be disabled | `models.py` | 20-29 |
+| 3.7 | **Unbounded Pagination** — `limit` parameter has no max cap; enables memory exhaustion DoS | `crud.py`, `routes/complaints.py` | 46-47, 25 |
+| 3.8 | **No Self-Vote Prevention** — Users can upvote their own complaints | `routes/complaints.py` | 33-57 |
+| 3.9 | **Unbounded Rating Value** — Rating field accepts any integer (0, -999, 1000) | `schemas.py`, `models.py` | 68, 75 |
+| 3.10 | **XSS Risk in Tags** — `TeacherRating.tags` is free-form string with no sanitization | `models.py` | 76 |
+| 3.11 | **AuditLog Never Populated** — Table exists but no route writes to it; no forensic trail | All routes | — |
+
+### Low
+
+| # | Finding | File | Lines |
+|---|---------|------|-------|
+| 4.1 | **Permissive CORS** — `allow_methods=["*"]` and `allow_headers=["*"]` | `main.py` | 17-19 |
+| 4.2 | **SQLite Thread Safety** — `check_same_thread=False` without justification | `database.py` | 6 |
+| 4.3 | **Silent Exception Swallowing** — `except Exception: pass` hides JSON parse errors | `routes/leaderboard.py` | 42-43 |
+| 4.4 | **JSON Stored as String** — `User.details` is `String` but parsed as JSON | `models.py` | 29 |
+| 4.5 | **No Rate Limiting** — All endpoints unprotected against brute-force/DoS | All routes | — |
+| 4.6 | **Unused Dependency** — `python-multipart` listed but not used | `requirements.txt` | 8 |
+
+---
+
+## 2. Frontend UX/UI & Functional Problems
+
+### Critical Functional Bugs
+1. **Mobile Navigation Missing** — Navbar uses `hidden md:flex`; on mobile there is **no hamburger menu** to navigate after login
+2. **Full Page Reloads After Mutations** — `teacher_dashboard.js` and `admin_dashboard.js` call `window.location.reload()` after actions, destroying SPA state and causing flicker
+3. **Dual Auth Storage Mismatch** — `state.js` stores session under `democrate_session`, while `auth.js` uses `democrate_jwt` + `democrate_user`. After reload, auth can break if one key is missing
+4. **Toast Container Duplication Risk** — `index.html` already has `#toast-container`, but `components.js` defines `ToastContainer()` that would inject a second one
+
+### High-Impact UX Issues
+1. **Inline `<style>` in JS Templates** — `complaint_form.js` and `register.js` inject `<style>` tags inside HTML strings; invalid in some parsers
+2. **Global Scope Pollution** — `window.appLogout`, `window.showToast` leak into global namespace
+3. **Inconsistent Auth References** — Some views use `Auth.getCurrentUser()`, others `state.user`, others destructured `user`; after reload these can be stale/missing
+4. **Non-Functional UI Elements** — Search/filter dropdowns on leaderboard, "Load More" buttons, "Generate Report" admin button all exist but have no handlers
+
+### Accessibility Violations (WCAG)
+1. **Missing ARIA Labels** — Icon-only buttons (upvote, downvote, visibility toggles, star ratings) lack `aria-label`
+2. **Unassociated Labels** — `<label>` elements lack `for` attributes matching input `id`s
+3. **No Skip Navigation** — Keyboard users cannot bypass the fixed nav bar
+4. **No Focus Management** — No focus restoration after route changes; no focus trapping in modals/popups
+5. **No `aria-live` Regions** — Toasts and dynamic status updates are not announced to screen readers
+6. **Color Contrast Risk** — Text over glassmorphism backgrounds may fail WCAG AA depending on backdrop-filter rendering
+7. **Keyboard Navigation Gaps** — Star ratings and tag toggles rely on mouse clicks only
+8. **Generic Alt Text** — Logo is `alt="Logo"`, preview images are `alt="Preview"`
+
+### Performance Issues
+1. **Tailwind CDN in Production** — CDN script is large, not cacheable, adds significant parse/compile time
+2. **No Component Memoization** — Every route change replaces `innerHTML` and re-fetches all data
+3. **No Caching Layer** — Every mount hits the server for complaints/leaderboard
+4. **Expensive `backdrop-filter`** — `glass.css` applies blur on every card; GPU-heavy on mobile/low-end devices
+5. **Mesh Gradient + Fixed Attachment** — `background-attachment: fixed` with 7 radial gradients causes repaint jank on mobile
+6. **External Avatar Dependencies** — `randomuser.me` and `ui-avatars.com` images load slowly and fail offline
+7. **No Lazy Loading** — All view modules are eagerly imported in `app.js`
+8. **No Skeleton Loading** — `Components.SkeletonCard()` exists but is never used
+
+---
+
+## 3. Enhancement Recommendations
+
+### Immediate (Security Blockers)
+1. **Restrict Admin Registration** — Remove `role=Role.ADMIN` from public `/auth/register`; default to `STUDENT`
+2. **Move JWT Secret to Environment** — `SECRET_KEY = os.getenv("SECRET_KEY")` with startup validation
+3. **Fix Anonymity Leak** — Replace deterministic `Anon-{id[:3]}X` with a random unlinkable ID stored in a separate mapping table
+4. **Add Database Constraints** — Unique constraint on `(complaint_id, user_id)` for votes; unique on `(teacher_id, student_id)` for ratings
+5. **Enforce State Machine** — Add explicit state transition validation in verify, archive, and vote endpoints
+6. **Implement Rate Limiting** — Add `slowapi` or reverse-proxy rate limiting on auth endpoints
+
+### Short-Term (UX & Stability)
+1. **Fix Mobile Navigation** — Add a hamburger menu that toggles the nav links on `hidden md:flex` elements
+2. **Replace Reloads with State Updates** — After verify/reject/archive, update local state and re-render instead of `window.location.reload()`
+3. **Unify Auth Storage** — Standardize on one storage key (`democrate_session`) and ensure `loadSession()` rehydrates all state correctly
+4. **Remove Toast Container Duplication** — Ensure `ToastContainer()` is only instantiated once
+5. **Add Self-Vote Check** — Block users from voting on their own complaints
+6. **Constrain Rating Values** — Pydantic `Field(ge=1, le=5)` + DB check constraint
+7. **Audit All Error Responses** — Remove sensitive fields (`details`, internal IDs) from public API responses
+
+### Medium-Term (Quality & Performance)
+1. **Migrate to Build Pipeline** — Add Vite or Webpack; replace Tailwind CDN with PostCSS build
+2. **Add Pagination** — Replace unbounded `limit` with cursor-based pagination (max 100 per page)
+3. **Implement Refresh Tokens** — Reduce access token TTL to 15-30 min; add rotating refresh tokens
+4. **Upgrade Password Hashing** — Switch from `sha256_crypt` to `bcrypt` with work factor 12
+5. **Add Password Complexity** — Enforce min 8 chars, mixed case, numbers, symbols
+6. **Add `is_active` Flag** — Allow disabling accounts without deletion
+7. **Populate AuditLog** — Log all sensitive actions (login, vote, verify, admin actions) with user_id, action, target, timestamp, IP
+8. **Add Lazy Loading** — Split view modules into dynamic imports
+9. **Implement Caching** — Cache leaderboard and public complaints with short TTL (30-60s)
+10. **Glassmorphism Fallbacks** — Add solid background fallbacks for `backdrop-filter` on low-end/mobile browsers
+
+### Long-Term (World-Class Polish)
+1. **Real-Time Updates** — WebSocket or Server-Sent Events for live leaderboard/vote updates
+2. **Dark Mode Toggle** — Implement the already-configured `darkMode: "class"` toggle
+3. **Notification System** — Build UI for the existing `state.notifications` array
+4. **Search & Filter** — Wire up existing but non-functional search/filter UI components
+5. **Edit/Delete Complaint** — Allow students to edit within a time window
+6. **Analytics Dashboard** — Admin analytics with charts (complaints by category, trends over time)
+7. **Voice/Image Upload** — Implement the roadmap features (voice complaints, evidence uploads)
+8. **Offline Resilience** — Service worker + IndexedDB for offline complaint drafting
+
+---
+
+## 4. Risk Matrix
+
+| Risk | Likelihood | Impact | Priority |
+|------|-----------|--------|----------|
+| Admin account takeover | High | Critical | **P0** |
+| JWT token forgery | High | Critical | **P0** |
+| Deanonymization of complainants | High | High | **P0** |
+| Vote manipulation / race conditions | Medium | High | **P1** |
+| State machine bypass | Medium | High | **P1** |
+| Mobile users locked out | High | Medium | **P1** |
+| Brute-force login | Medium | Medium | **P2** |
+| XSS via tags | Low | Medium | **P2** |
+| DoS via unbounded pagination | Low | Medium | **P3** |
+
+---
+
+## 5. Recommended Next Steps
+
+1. **Immediate:** Fix the 3 Critical backend issues (admin registration, hardcoded secret, anonymity leak)
+2. **This Week:** Implement mobile navigation, replace reloads with state updates, and add duplicate vote/rating prevention
+3. **This Sprint:** Add rate limiting, enforce state machines, implement refresh tokens, and upgrade password hashing
+4. **Next Sprint:** Build pipeline migration, caching, lazy loading, and accessibility fixes (ARIA, focus management, skip nav)
+5. **Roadmap:** Real-time features, advanced analytics, and offline support
+
+
+
+I’m going to create a focused, implementation-ready plan for the critical and high-severity issues. Before I finalize, I need to confirm one scope decision.
+
+**Question:** Should the plan cover **only P0/P1 security and critical UX fixes** (backend auth hardening, anonymity fix, state-machine enforcement, mobile navigation, auth unification, reload elimination), or should it also include the **P2 quality-of-life improvements** (rate limiting, password policy upgrade, build pipeline migration, caching, and accessibility ARIA fixes)?
+
+My recommendation is **P0/P1 only for this plan** — that gives another agent a tight, high-impact execution window. The P2 items can follow in a separate roadmap.
+
+If you agree, I’ll write the plan to `C:\Users\Yp921\.local\share\kilo\plans\1786171202315-democrate-critical-fixes-plan.md` covering:
+
+1. **Backend Security Sprint**
+   - Restrict admin self-registration
+   - Externalize JWT secret + startup validation
+   - Fix anonymity leak with random unlinkable IDs
+   - Enforce complaint state-machine transitions
+   - Add DB constraints + atomic counters for votes/ratings
+
+2. **Frontend Critical UX Sprint**
+   - Add mobile hamburger menu
+   - Replace `window.location.reload()` with local state re-render
+   - Unify auth storage to single source of truth
+   - Remove duplicate toast container risk
+
+3. **Validation**
+   - Manual test scenarios for each fix
+   - Verify no regressions in existing happy paths
+
+
+| Area              | Status                         |
+| ----------------- | ------------------------------ |
+| Frontend          | ✅ Ready                        |
+| Backend           | ✅ Ready                        |
+| Database          | ✅ Ready                        |
+| Authentication    | ✅ Ready                        |
+| Refresh Tokens    | ✅ Ready                        |
+| Docker            | ✅ Ready                        |
+| Reverse Proxy     | ✅ Ready                        |
+| Health Checks     | ✅ Ready                        |
+| Automated Testing | ✅ Ready                        |
+| Authorization     | ⚠️ Verify endpoint-by-endpoint |
+| Audit Logging     | Recommended                    |
+| Notifications     | Recommended                    |
+| Monitoring        | Recommended                    |
+| Automated Backups | Recommended                    |
+| Documentation     | Recommended                    |
+
+
+
+
+Email authentication is a good addition to the roadmap. It improves account security, reduces fake registrations, and provides a recovery path for forgotten passwords. Since you're waiting for school approval before adding more features, it fits well as an "Upcoming Feature."
+
+I'd describe it like this:
+
+---
+
+# Upcoming Feature: Email Authentication & Account Verification
+
+### Purpose
+
+Enhance account security by verifying that every registered user owns the email address they provide.
+
+### Features
+
+* **Email Verification**
+
+  * Users receive a one-time verification link or OTP during registration.
+  * Accounts remain inactive until the email is verified.
+
+* **Password Reset**
+
+  * Users can securely reset forgotten passwords using a time-limited email link or OTP.
+
+* **Account Recovery**
+
+  * Verified email addresses can be used to recover access if a password is forgotten.
+
+* **Security Alerts**
+
+  * Notify users by email about important account events such as:
+
+    * New login from an unfamiliar device.
+    * Password changes.
+    * Email address changes.
+
+* **Administrative Notifications (Optional)**
+
+  * Administrators can receive email notifications for high-priority events, such as complaints requiring immediate attention.
+
+### Planned Workflow
+
+```text
+User Registration
+        │
+        ▼
+Enter Email Address
+        │
+        ▼
+Verification Email Sent
+        │
+        ▼
+User Clicks Verification Link
+        │
+        ▼
+Account Activated
+```
+
+### Benefits
+
+* Prevents fake or mistyped email addresses.
+* Makes password recovery straightforward.
+* Improves overall account security.
+* Builds user trust in the platform.
+
+### Planned Implementation
+
+* FastAPI backend
+* Secure verification tokens with expiration
+* SMTP email service (or a transactional email provider in the future)
+* Time-limited verification and password reset links
+* Database fields to track email verification status
+
+---
+
+For the school deployment, I would also recommend **restricting registrations to official school email addresses (if the school provides them)**. If students don't have official email accounts, you can keep email verification optional during the pilot and make it mandatory only if the school later adopts a managed email system. This keeps the registration process aligned with whatever infrastructure the school already has.

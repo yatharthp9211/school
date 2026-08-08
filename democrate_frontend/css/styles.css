@@ -1,0 +1,211 @@
+/* css/styles.css — Editorial Prestige design system
+   Light + dark themes via CSS custom properties. */
+
+/* ------------------------------------------------------------------ */
+/*  Design tokens                                                      */
+/* ------------------------------------------------------------------ */
+
+:root {
+    /* Color */
+    --color-ivory: #FAF7F2;
+    --color-ivory-deep: #F4EEE4;
+    --color-surface: #FFFFFF;
+    --color-surface-sunken: #F4EEE4;
+    --color-ink: #1B2530;
+    --color-ink-muted: #5C6B7A;
+    --color-emerald: #0E6B45;
+    --color-emerald-strong: #0A5536;
+    --color-emerald-soft: rgba(14, 107, 69, 0.08);
+    --color-gold: #C6A15B;
+    --color-gold-strong: #A98340;
+    --color-gold-soft: rgba(198, 161, 91, 0.14);
+    --color-hairline: #E6DDCF;
+    --color-hairline-strong: #D8CCB8;
+    --color-danger: #B3423E;
+    --color-danger-soft: rgba(179, 66, 62, 0.08);
+
+    /* Background glows */
+    --bg-glow-a: rgba(14, 107, 69, 0.07);
+    --bg-glow-b: rgba(198, 161, 91, 0.10);
+    --bg-glow-c: rgba(27, 37, 48, 0.05);
+
+    /* Shadows — warm-tinted, layered */
+    --shadow-sm: 0 1px 2px rgba(27, 37, 48, 0.04);
+    --shadow-md: 0 4px 12px -2px rgba(27, 37, 48, 0.08);
+    --shadow-lg: 0 14px 34px -10px rgba(27, 37, 48, 0.16);
+    --shadow-xl: 0 26px 60px -18px rgba(27, 37, 48, 0.22);
+
+    /* Radii */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 26px;
+    --radius-pill: 999px;
+
+    /* Type */
+    --font-display: "Fraunces", "Georgia", serif;
+    --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+
+    /* Layout */
+    --nav-h: 68px;
+    --content-w: 1080px;
+}
+
+[data-theme="dark"] {
+    --color-ivory: #0F151B;
+    --color-ivory-deep: #131B22;
+    --color-surface: #171F27;
+    --color-surface-sunken: #1D2731;
+    --color-ink: #EDE8DE;
+    --color-ink-muted: #9AA7B4;
+    --color-emerald: #3FBE8A;
+    --color-emerald-strong: #58D09C;
+    --color-emerald-soft: rgba(63, 190, 138, 0.12);
+    --color-gold: #D6B26E;
+    --color-gold-strong: #E4C383;
+    --color-gold-soft: rgba(214, 178, 110, 0.14);
+    --color-hairline: #2A3540;
+    --color-hairline-strong: #37434F;
+    --color-danger: #E07A75;
+    --color-danger-soft: rgba(224, 122, 117, 0.12);
+
+    --bg-glow-a: rgba(63, 190, 138, 0.07);
+    --bg-glow-b: rgba(214, 178, 110, 0.08);
+    --bg-glow-c: rgba(63, 190, 138, 0.05);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 14px 34px -10px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 26px 60px -18px rgba(0, 0, 0, 0.6);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                               */
+/* ------------------------------------------------------------------ */
+
+body {
+    background-color: var(--color-ivory);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* Layered background glow — fixed layer, no background-attachment repaint jank. */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(52rem 52rem at 12% -6%, var(--bg-glow-a) 0%, transparent 62%),
+        radial-gradient(46rem 46rem at 106% 2%, var(--bg-glow-b) 0%, transparent 58%),
+        radial-gradient(60rem 60rem at 50% 118%, var(--bg-glow-c) 0%, transparent 62%);
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+}
+
+a {
+    color: var(--color-emerald);
+    text-decoration: none;
+}
+
+::selection {
+    background: var(--color-emerald-soft);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-emerald);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: var(--color-hairline-strong);
+    border-radius: 6px;
+    border: 2px solid var(--color-ivory);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-muted); }
+
+/* ------------------------------------------------------------------ */
+/*  App shell & utilities                                              */
+/* ------------------------------------------------------------------ */
+
+.app-shell {
+    width: 100%;
+    max-width: var(--content-w);
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.skip-link {
+    position: absolute;
+    left: -999px;
+    top: 0;
+    z-index: 9999;
+    background: var(--color-emerald);
+    color: #fff;
+    padding: 0.6rem 1rem;
+    border-radius: 0 0 var(--radius-sm) 0;
+    font-weight: 600;
+}
+.skip-link:focus {
+    left: 0;
+}
+
+.eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-gold-strong);
+}
+
+.display {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    color: var(--color-ink);
+}
+
+.muted { color: var(--color-ink-muted); }
+.small { font-size: 0.85rem; }
+.italic { font-style: italic; }
+
+/* Material symbol defaults */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+    user-select: none;
+}
+.material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 500; }
+
+/* ------------------------------------------------------------------ */
+/*  Responsive                                                         */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 640px) {
+    .app-shell { padding: 0 0.85rem; }
+
+    /* Page headings use per-view inline sizes; scale them down as a group.
+       !important is required to beat those inline font-size declarations. */
+    h1.display { font-size: 1.5rem !important; }
+    h2.display { font-size: 1.2rem !important; }
+    h3.display { font-size: 1.05rem !important; }
+}

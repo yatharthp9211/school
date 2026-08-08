@@ -1,0 +1,113 @@
+// views/admin_dashboard.js
+import { api } from '../js/api.js';
+import { Auth } from '../js/auth.js';
+import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=4';
+
+function esc(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function toCsv(complaints) {
+    const header = 'id,category,status,score,created_at,text';
+    const rows = complaints.map((c) =>
+        [c.id, c.category || '', c.status || '', c.score ?? 0, c.created_at || '', (c.text || '').replace(/"/g, '""')]
+            .map((v) => `"${v}"`).join(',')
+    );
+    return [header, ...rows].join('\n');
+}
+
+export const AdminDashboardView = {
+    render: async () => {
+        const user = Auth.getCurrentUser();
+        if (!user || user.role !== 'admin') {
+            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+        }
+
+        const [all, flagged, falseEntries] = await Promise.all([
+            api.adminGetComplaints({ limit: 100 }),
+            api.adminFlagged(),
+            api.adminFalse(),
+        ]);
+
+        const pending = all.filter((c) => (c.status || '').toLowerCase() === 'pending').length;
+        const resolved = all.filter((c) => (c.status || '').toLowerCase() === 'resolved').length;
+        const archived = all.filter((c) => (c.status || '').toLowerCase() === 'archived').length;
+
+        const flaggedCards = flagged.length
+            ? flagged.map((entry) => FlaggedCard(entry)).join('')
+            : Empty('No complaints currently flagged for review.', 'verified');
+
+        const recentCards = all.slice(0, 6).map((c) => ComplaintCard(c, 'admin', user.id)).join('');
+
+        const falseList = falseEntries.length
+            ? falseEntries.map((entry) => {
+                const c = entry.complaint;
+                const a = entry.author;
+                return `
+                    <div class="card card-padded" style="border-left:3px solid var(--color-danger)">
+                        <div class="flex justify-between items-start gap-3 flex-wrap">
+                            <span class="small muted">${c.id} · ${new Date(c.created_at).toLocaleDateString()}</span>
+                            ${StatusPillInline('Archived')}
+                        </div>
+                        <p class="small" style="margin-top:.5rem">${esc(c.text)}</p>
+                        <span class="small muted" style="margin-top:.5rem;display:block">
+                            Complainant: <strong>${a ? `${esc(a.name)} (${esc(a.id)})` : 'Unknown'}</strong>
+                            · Score ${c.score ?? 0}
+                        </span>
+                    </div>
+                `;
+            }).join('')
+            : Empty('No false-complaint determinations recorded.', 'verified_user');
+
+        const csv = encodeURIComponent(toCsv(all));
+
+        return `
+            ${Navbar(user)}
+            <main id="app-main" style="padding:2rem 0 3rem">
+                <header class="flex flex-wrap justify-between items-end gap-3 animate-fade-in">
+                    <div>
+                        <span class="eyebrow">Administration</span>
+                        <h1 class="display" style="font-size:1.9rem;margin-top:.2rem">Oversight dashboard</h1>
+                        <p class="muted small">Moderation, resolution, and the accountability trail. Votes only flag — you decide.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="#/admin/complaints" class="btn btn-ghost">All complaints</a>
+                        <a href="#/admin/audit" class="btn btn-ghost">Audit log</a>
+                        <button class="btn btn-ink" data-action="export-csv" data-csv="${csv}">
+                            <span class="material-symbols-outlined">download</span>Export CSV
+                        </button>
+                    </div>
+                </header>
+
+                <section class="grid grid-cols-2 md:grid-cols-4 gap-4" style="margin-top:1.5rem" aria-label="System stats">
+                    ${Stat(all.length, 'Total complaints')}
+                    ${Stat(pending, 'Pending')}
+                    ${Stat(flagged.length, 'Flagged for review')}
+                    ${Stat(resolved, 'Resolved')}
+                </section>
+
+                <section style="margin-top:2rem">
+                    <div class="flex items-center justify-between flex-wrap gap-2" style="margin-bottom:.9rem">
+                        <h2 class="display" style="font-size:1.25rem">Moderation queue</h2>
+                        <span class="badge badge-flagged">Votes are a signal, not a verdict</span>
+                    </div>
+                    <div class="flex flex-col gap-4">${flaggedCards}</div>
+                </section>
+
+                <section style="margin-top:2rem">
+                    <h2 class="display" style="font-size:1.25rem;margin-bottom:.9rem">Recent complaints</h2>
+                    <div class="flex flex-col gap-4">${recentCards}</div>
+                </section>
+
+                <section style="margin-top:2rem">
+                    <h2 class="display" style="font-size:1.25rem;margin-bottom:.9rem">False determinations (accountability record)</h2>
+                    <div class="flex flex-col gap-3">${falseList}</div>
+                </section>
+            </main>
+        `;
+    },
+};
+
+function StatusPillInline(status) {
+    return `<span class="pill pill-archived"><span class="material-symbols-outlined" style="font-size:.95rem">archive</span>${status}</span>`;
+}

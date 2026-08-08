@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Sanskar Global - Administrator Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#ffffff",
+                        "surface": "#f5faff",
+                        "on-surface": "#011e2d",
+                        "inverse-surface": "#193342",
+                        "on-tertiary-container": "#f8ffef",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#59e23f",
+                        "on-surface-variant": "#3e4a3b",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#64df6a",
+                        "on-primary-fixed-variant": "#005314",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#158700",
+                        "outline-variant": "#bdcab7",
+                        "secondary-fixed": "#ffdadc",
+                        "inverse-on-surface": "#e4f3ff",
+                        "surface-variant": "#cce6fa",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#400010",
+                        "primary-container": "#008726",
+                        "inverse-primary": "#64df6a",
+                        "surface-tint": "#006e1d",
+                        "on-secondary-fixed-variant": "#91022f",
+                        "secondary": "#b22545",
+                        "secondary-container": "#fd5e79",
+                        "tertiary": "#0f6b00",
+                        "on-background": "#011e2d",
+                        "on-secondary-container": "#64001d",
+                        "primary": "#006b1c",
+                        "on-primary-fixed": "#002204",
+                        "surface-container": "#def0ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#c3def1",
+                        "tertiary-fixed": "#78ff5b",
+                        "surface-container-low": "#eaf5ff",
+                        "background": "#f5faff",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f5faff",
+                        "secondary-fixed-dim": "#ffb2b9",
+                        "on-tertiary-fixed-variant": "#095300",
+                        "on-primary-container": "#f7fff1",
+                        "outline": "#6e7b6a",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#d2ecff",
+                        "surface-container-highest": "#cce6fa",
+                        "primary-fixed": "#80fd83",
+                        "on-tertiary-fixed": "#022100"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "container-max": "1200px",
+                        "safe": "env(safe-area-inset-bottom)"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Montserrat"],
+                        "display-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background: linear-gradient(135deg, #e4fafe 0%, #ffffff 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(23, 43, 63, 0.08);
+        }
+        .stagger-1 { animation: fadeUp 0.6s ease-out 0.1s both; }
+        .stagger-2 { animation: fadeUp 0.6s ease-out 0.2s both; }
+        .stagger-3 { animation: fadeUp 0.6s ease-out 0.3s both; }
+        .stagger-4 { animation: fadeUp 0.6s ease-out 0.4s both; }
+        
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="text-on-surface bg-background font-body-md overflow-x-hidden pt-16 pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full bg-white/50 dark:bg-on-surface/50 backdrop-blur-lg border-b border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(23,43,63,0.08)] flex justify-between items-center px-4 h-16 z-50">
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed">Sanskar Global</h1>
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</header>
+<main class="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto pt-6 flex flex-col gap-6">
+<!-- Command Center -->
+<section class="stagger-1">
+<div class="flex justify-between items-end mb-4">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Command Center</h2>
+<button class="text-primary font-label-sm text-label-sm flex items-center gap-1 bg-primary-container/10 px-3 py-1.5 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-[16px]">filter_list</span> Filters
+                </button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-card rounded-xl p-4 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-tertiary text-3xl mb-1">inbox</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-on-surface">142</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total Active</span>
+</div>
+<div class="glass-card rounded-xl p-4 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-secondary text-3xl mb-1">priority_high</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-secondary">28</span>
+<span class="font-label-sm text-label-sm text-secondary">Critical Priority</span>
+</div>
+<div class="glass-card rounded-xl p-4 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary text-3xl mb-1">check_circle</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-on-surface">85%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Resolution Rate</span>
+</div>
+<div class="glass-card rounded-xl p-4 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-outline text-3xl mb-1">schedule</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-on-surface">2.4h</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Avg Response</span>
+</div>
+</div>
+</section>
+<!-- Flagged Alert -->
+<section class="stagger-2">
+<div class="glass-card border-secondary/30 bg-error-container/40 rounded-xl p-4 flex gap-4 items-start relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div class="flex-1">
+<h3 class="font-label-md text-label-md text-on-secondary-container mb-1">Flagged: Possible False Allegation</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-3">AI pattern detection suggests Report #892 aligns with known coordinated spam activity.</p>
+<div class="flex gap-2">
+<button class="bg-secondary text-on-secondary font-label-sm text-label-sm px-4 py-2 rounded-full shadow-[0_0_12px_rgba(178,37,69,0.3)]">Review Case</button>
+<button class="bg-transparent border border-secondary/50 text-secondary font-label-sm text-label-sm px-4 py-2 rounded-full">Dismiss</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Global Feed -->
+<section class="stagger-3 flex-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-4">Global Feed</h2>
+<div class="flex flex-col gap-4">
+<!-- Card 1 -->
+<article class="glass-card rounded-xl p-5">
+<div class="flex justify-between items-start mb-3">
+<div class="flex gap-2">
+<span class="bg-error-container text-on-error-container font-label-sm text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">security</span> Bullying
+                            </span>
+<span class="bg-surface-variant text-on-surface-variant font-label-sm text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">psychology</span> High Distress
+                            </span>
+</div>
+<span class="font-label-sm text-[11px] text-outline">10m ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface mb-4 line-clamp-3">Repeated incidents in the senior block corridor during lunch break. Group of students blocking access to lockers.</p>
+<div class="flex justify-between items-center border-t border-white/30 pt-3">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-[18px]">visibility_off</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Anonymous</span>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-[18px]">done</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-surface-variant/50 text-on-surface-variant flex items-center justify-center border border-white/50">
+<span class="material-symbols-outlined text-[18px]">more_horiz</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="glass-card rounded-xl p-5">
+<div class="flex justify-between items-start mb-3">
+<div class="flex gap-2">
+<span class="bg-tertiary-container/20 text-tertiary font-label-sm text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">build</span> Facility
+                            </span>
+</div>
+<span class="font-label-sm text-[11px] text-outline">1h ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface mb-4 line-clamp-2">The water dispenser on the 3rd floor is leaking severely, creating a slip hazard near the stairs.</p>
+<div class="flex justify-between items-center border-t border-white/30 pt-3">
+<div class="flex items-center gap-2">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A small, circular avatar portrait of a student, friendly light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtZt89IPCIRD1_8duuWXpDMT_PuRy0ip6qWwQ2czFaUZ44gHZwe6b3CkIyS4tYVlNjTrXDs_9Xg6JcfhQYYXA6knnriizYbpJnh9Mrb0iiQmGq2DEHd1s6Lrjscnze19gvurn2E4V_2dqFKvk2jKmZio4up4-aRzcYM9Lu5rBe6XPYxOYP2VrpS-xCV2U6Q1RZzt0XKeH2sNPBNsDenMOjKiPmAd4oy8x7oJn7dTrJt2gg650BVjBK"/>
+<span class="font-label-sm text-label-sm text-on-surface">R. Sharma</span>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-[18px]">done</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-surface-variant/50 text-on-surface-variant flex items-center justify-center border border-white/50">
+<span class="material-symbols-outlined text-[18px]">more_horiz</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+<div class="mt-6 flex justify-center">
+<button class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+                    Load More <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-6 pb-safe bg-white/50 dark:bg-on-surface/50 backdrop-blur-lg rounded-t-xl border-t border-white/40 dark:border-white/10 shadow-[0_-8px_32px_0_rgba(23,43,63,0.08)] md:hidden">
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full font-label-md text-label-md hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+            Dashboard
+        </button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant opacity-70 font-label-md text-label-md hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined mb-1">description</span>
+            Complaints
+        </button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant opacity-70 font-label-md text-label-md hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined mb-1">leaderboard</span>
+            Leaderboard
+        </button>
+</nav>
+</body></html>

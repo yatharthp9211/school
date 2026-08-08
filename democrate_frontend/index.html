@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FAF7F2">
+    <meta name="description" content="Democrate — anonymous complaint platform for Sanskar Global School. Report concerns safely.">
+    <title>Democrate · Sanskar Global School</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS (CDN — zero-build workflow) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Config is loaded synchronously before app initialization -->
+    <!-- ?v= cache-busters: bump to force browsers to fetch fresh files after updates. -->
+    <script type="module" src="js/config.js?v=4"></script>
+
+    <!-- Modular CSS -->
+    <link rel="stylesheet" href="css/reset.css?v=4">
+    <link rel="stylesheet" href="css/styles.css?v=4">
+    <link rel="stylesheet" href="css/components.css?v=4">
+    <link rel="stylesheet" href="css/animations.css?v=4">
+</head>
+<body class="font-body antialiased">
+    <!-- Skip link for keyboard / screen-reader users -->
+    <a href="#app-main" class="skip-link">Skip to main content</a>
+
+    <!-- Main App Container for Router -->
+    <div id="app" class="app-shell"></div>
+
+    <!-- Single, aria-live toast region -->
+    <div id="toast-container" role="status" aria-live="polite" class="toast-container"></div>
+
+    <!-- Application Logic (Modules) -->
+    <script type="module" src="js/app.js?v=4"></script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Teacher Leaderboard - Sanskar Global</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#ffffff",
+                        "surface": "#f5faff",
+                        "on-surface": "#011e2d",
+                        "inverse-surface": "#193342",
+                        "on-tertiary-container": "#f8ffef",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#59e23f",
+                        "on-surface-variant": "#3e4a3b",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#64df6a",
+                        "on-primary-fixed-variant": "#005314",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#158700",
+                        "outline-variant": "#bdcab7",
+                        "secondary-fixed": "#ffdadc",
+                        "inverse-on-surface": "#e4f3ff",
+                        "surface-variant": "#cce6fa",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#400010",
+                        "primary-container": "#008726",
+                        "inverse-primary": "#64df6a",
+                        "surface-tint": "#006e1d",
+                        "on-secondary-fixed-variant": "#91022f",
+                        "secondary": "#b22545",
+                        "secondary-container": "#fd5e79",
+                        "tertiary": "#0f6b00",
+                        "on-background": "#011e2d",
+                        "on-secondary-container": "#64001d",
+                        "primary": "#006b1c",
+                        "on-primary-fixed": "#002204",
+                        "surface-container": "#def0ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#c3def1",
+                        "tertiary-fixed": "#78ff5b",
+                        "surface-container-low": "#eaf5ff",
+                        "background": "#f5faff",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f5faff",
+                        "secondary-fixed-dim": "#ffb2b9",
+                        "on-tertiary-fixed-variant": "#095300",
+                        "on-primary-container": "#f7fff1",
+                        "outline": "#6e7b6a",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#d2ecff",
+                        "surface-container-highest": "#cce6fa",
+                        "primary-fixed": "#80fd83",
+                        "on-tertiary-fixed": "#022100"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Montserrat"],
+                        "display-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            background-image: radial-gradient(circle at 15% 50%, rgba(228, 250, 255, 0.4), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(128, 253, 131, 0.1), transparent 25%);
+            background-attachment: fixed;
+        }
+        
+        /* Glassmorphism Utilities */
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(23, 43, 63, 0.08);
+        }
+        
+        .glass-input {
+            background-color: rgba(228, 250, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            border-color: theme('colors.primary');
+            background-color: rgba(255, 255, 255, 0.8);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 107, 28, 0.2);
+        }
+
+        /* Animations */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-rise {
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+</head>
+<body class="text-on-surface antialiased min-h-screen pb-24 md:pb-0 md:pt-20">
+<!-- TopAppBar (Mobile & Web) -->
+<header class="fixed top-0 w-full bg-white/50 dark:bg-on-surface/50 backdrop-blur-lg border-b border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(23,43,63,0.08)] flex justify-between items-center px-4 h-16 z-50">
+<button aria-label="Menu" class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">shield_person</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed tracking-tight">Sanskar Global</h1>
+<button aria-label="Notifications" class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</header>
+<!-- Main Content Container -->
+<main class="w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-24 pb-8 flex flex-col gap-6">
+<!-- Page Header -->
+<div class="text-center mb-2">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">Teacher Leaderboard</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Top mentors resolving concerns this month</p>
+</div>
+<!-- Vertical Podium (Mobile Optimized) -->
+<section class="flex flex-col gap-4 relative z-10">
+<!-- Rank 1 -->
+<div class="glass-card rounded-xl p-4 flex items-center gap-4 relative overflow-hidden animate-rise delay-100 border-l-4 border-l-[#FFD700]">
+<div class="absolute -right-4 -top-4 w-16 h-16 bg-[#FFD700]/10 rounded-full blur-xl"></div>
+<div class="flex flex-col items-center justify-center w-12 shrink-0">
+<span class="material-symbols-outlined text-[#FFD700] text-3xl drop-shadow-md" style="font-variation-settings: 'FILL' 1;">trophy</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-bold">1st</span>
+</div>
+<div class="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-[#FFD700] shadow-sm">
+<img alt="Mr. Sharma" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged male teacher with glasses, smiling warmly. The lighting is soft and natural, emphasizing approachability and trust. He is wearing a crisp light blue shirt. The background is a slightly blurred, modern school classroom with light cyan and green accents reflecting the Sanskar Global brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWNO13NZeLZqs5nK91xy4kZYgMrPFcs1wNhFRGZLl3Dkf0cAO6POcPc8pYAUKIDBptfK-RDANjCCODps6YqybC1MUWTC2UNKH8FuNqdPX6TQUnyVbYuZ0P5f-khuN4so6zurkmXLvZQwsa7ZFmOGIq2qDuNsjwu-bGlYhHdNcQ5pl86GhPlnaR0aHXCgtrUBI2uw0YTiD7bO1nFMuTfLK7dsV73QOTG0PeBfBbmj8kqbBphScqLGmA"/>
+</div>
+<div class="flex-grow min-w-0">
+<h3 class="font-label-md text-label-md text-on-surface font-bold truncate">Mr. A. Sharma</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate">Mathematics Dept.</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center gap-1 bg-tertiary-fixed-dim/20 text-tertiary-container px-2 py-0.5 rounded-full font-label-sm text-[10px]">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            42 Resolved
+                        </span>
+<span class="inline-flex items-center text-primary text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px]">star</span> 4.9
+                        </span>
+</div>
+</div>
+</div>
+<!-- Rank 2 -->
+<div class="glass-card rounded-xl p-3 flex items-center gap-3 relative overflow-hidden animate-rise delay-200 border-l-4 border-l-[#C0C0C0] ml-4">
+<div class="flex flex-col items-center justify-center w-10 shrink-0">
+<span class="font-label-sm text-label-sm text-[#C0C0C0] font-bold">2nd</span>
+</div>
+<div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-[#C0C0C0]">
+<img alt="Ms. Patel" class="w-full h-full object-cover" data-alt="A professional portrait of a female teacher in her late 30s with an inviting, calm expression. She is wearing a professional beige blazer over a white top. The lighting is bright and high-key, conveying a sense of transparency and modern professionalism. The background is softly blurred with a hint of frosted glass textures and pale green hues." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCetKENqeHMD1LrV0ZMk16RR6JCYFqUEwr4iWOvXhWXOQq9OFqRXY9JhVDZFZYCG9eCV7i4mFhipui70WgpLvQk1P14oZfDiFNdbJpLfrz2b3HPSj3G9uFylz2RL_vprgN4FaJecA3BORJ95NNN888_TUmdAKq3odfVOPtTB7JAfetnT2d1doBFDV-LLO0rJ8GbSDWtLWQMCXb5YDeOMSNpOE3SHU_lnPf_ogGHxPefWmchE9d8eOQg"/>
+</div>
+<div class="flex-grow min-w-0">
+<h3 class="font-label-md text-label-md text-on-surface font-semibold truncate">Ms. P. Patel</h3>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-on-surface-variant text-xs">38 Resolved</span>
+<span class="inline-flex items-center text-on-surface-variant text-xs">
+<span class="material-symbols-outlined text-[14px]">star</span> 4.8
+                        </span>
+</div>
+</div>
+</div>
+<!-- Rank 3 -->
+<div class="glass-card rounded-xl p-3 flex items-center gap-3 relative overflow-hidden animate-rise delay-300 border-l-4 border-l-[#CD7F32] ml-8">
+<div class="flex flex-col items-center justify-center w-10 shrink-0">
+<span class="font-label-sm text-label-sm text-[#CD7F32] font-bold">3rd</span>
+</div>
+<div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-[#CD7F32]">
+<img alt="Mr. Singh" class="w-full h-full object-cover" data-alt="A friendly, approachable portrait of a young male teacher in his late 20s. He has a neat short haircut and wears a dark green polo shirt that matches the school's primary color. The scene is brightly lit with a clean, light-mode glassmorphic aesthetic. The background features subtle gradients of light blue and white, suggesting a high-tech, modern school environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4hqHorOB6gdBkjJHEffO8cc56NYU6uuE0uPzKbMDsF-_5Xmvj_dQvL0Kz_8p3lAYxA3AoZTMNBoF_EfbLnmEjLQTDApt1L1AL-tRm46hrULzsM1LgeQqMvf7KTLD8Gm4fntlasoBnlq3NQsIRwJolk3srMWvLtAd_l0i8F7NRVbnklmsuo4Qq53mC450DjR6FO7j5lD5m8DCXhzImATdn1Ey4L4SV2ULNX_A_jztjj-VjiEULXw_C"/>
+</div>
+<div class="flex-grow min-w-0">
+<h3 class="font-label-md text-label-md text-on-surface font-semibold truncate">Mr. R. Singh</h3>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-on-surface-variant text-xs">31 Resolved</span>
+<span class="inline-flex items-center text-on-surface-variant text-xs">
+<span class="material-symbols-outlined text-[14px]">star</span> 4.7
+                        </span>
+</div>
+</div>
+</div>
+</section>
+<!-- Search & Filter -->
+<div class="relative mt-2 animate-rise delay-300">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="glass-input w-full rounded-full py-3 pl-10 pr-4 font-body-md text-body-md text-on-surface placeholder:text-outline focus:ring-0" placeholder="Search teachers..." type="text"/>
+</div>
+<!-- Full List View -->
+<section class="flex flex-col gap-2 mt-2 pb-6 animate-rise delay-300">
+<!-- List Item -->
+<div class="glass-card rounded-lg p-3 flex items-center gap-3 hover:bg-white/80 transition-colors cursor-pointer">
+<span class="w-6 text-center font-label-md text-label-md text-on-surface-variant font-bold">4</span>
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center shrink-0 text-primary font-bold text-sm">
+                    VK
+                </div>
+<div class="flex-grow min-w-0 flex flex-col justify-center">
+<h4 class="font-label-md text-label-md text-on-surface truncate leading-tight">Mrs. V. Kumar</h4>
+<span class="text-[11px] text-on-surface-variant">Science</span>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="font-label-sm text-label-sm text-primary font-bold">28</span>
+<span class="text-[10px] text-on-surface-variant">Resolved</span>
+</div>
+</div>
+<!-- List Item -->
+<div class="glass-card rounded-lg p-3 flex items-center gap-3 hover:bg-white/80 transition-colors cursor-pointer">
+<span class="w-6 text-center font-label-md text-label-md text-on-surface-variant font-bold">5</span>
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center shrink-0 text-primary font-bold text-sm">
+                    SJ
+                </div>
+<div class="flex-grow min-w-0 flex flex-col justify-center">
+<h4 class="font-label-md text-label-md text-on-surface truncate leading-tight">Mr. S. Joshi</h4>
+<span class="text-[11px] text-on-surface-variant">English</span>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="font-label-sm text-label-sm text-primary font-bold">24</span>
+<span class="text-[10px] text-on-surface-variant">Resolved</span>
+</div>
+</div>
+<!-- List Item -->
+<div class="glass-card rounded-lg p-3 flex items-center gap-3 hover:bg-white/80 transition-colors cursor-pointer">
+<span class="w-6 text-center font-label-md text-label-md text-on-surface-variant font-bold">6</span>
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center shrink-0 text-primary font-bold text-sm">
+                    NG
+                </div>
+<div class="flex-grow min-w-0 flex flex-col justify-center">
+<h4 class="font-label-md text-label-md text-on-surface truncate leading-tight">Ms. N. Gupta</h4>
+<span class="text-[11px] text-on-surface-variant">History</span>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="font-label-sm text-label-sm text-primary font-bold">19</span>
+<span class="text-[10px] text-on-surface-variant">Resolved</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-6 pb-safe bg-white/50 dark:bg-on-surface/50 backdrop-blur-lg border-t border-white/40 dark:border-white/10 shadow-[0_-8px_32px_0_rgba(23,43,63,0.08)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant opacity-70 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant opacity-70 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">description</span>
+<span class="font-label-sm text-label-sm">Complaints</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="font-label-sm text-label-sm">Leaderboard</span>
+</a>
+</nav>
+<script>
+        // Simple script to handle input focus state styling if needed beyond CSS
+        const searchInput = document.querySelector('input[type="text"]');
+        if(searchInput) {
+            searchInput.addEventListener('focus', function() {
+                this.parentElement.querySelector('.material-symbols-outlined').classList.add('text-primary');
+                this.parentElement.querySelector('.material-symbols-outlined').classList.remove('text-on-surface-variant');
+            });
+            searchInput.addEventListener('blur', function() {
+                this.parentElement.querySelector('.material-symbols-outlined').classList.remove('text-primary');
+                this.parentElement.querySelector('.material-symbols-outlined').classList.add('text-on-surface-variant');
+            });
+        }
+    </script>
+</body></html>
