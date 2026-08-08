@@ -1,6 +1,6 @@
-// js/api.js?v=5 — fetch wrapper + typed API methods
-import { API } from './config.js?v=5';
-import { Auth } from './auth.js?v=5';
+// js/api.js — fetch wrapper + typed API methods
+import { API } from './config.js';
+import { Auth } from './auth.js';
 
 async function fetchApi(url, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
@@ -19,7 +19,7 @@ async function fetchApi(url, options = {}) {
     if (!res.ok) {
         let detail = `Server error (${res.status})`;
         try {
-            const data = await res.js?v=5on();
+            const data = await res.json();
             if (data && data.detail) detail = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
         } catch (e) { /* non-JSON error body */ }
 
@@ -30,7 +30,7 @@ async function fetchApi(url, options = {}) {
     }
 
     if (res.status === 204) return null;
-    return res.js?v=5on();
+    return res.json();
 }
 
 function qs(params) {

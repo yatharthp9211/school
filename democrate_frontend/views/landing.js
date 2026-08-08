@@ -1,7 +1,7 @@
-import { CONFIG } from '../js/config.js?v=5';
-import { Auth } from '../js/auth.js?v=5';
-import { router } from '../js/router.js?v=5';
-import { Footer, ThemeToggle } from '../js/components.js?v=5';
+import { CONFIG } from '../js/config.js';
+import { Auth } from '../js/auth.js';
+import { router } from '../js/router.js';
+import { Footer, ThemeToggle } from '../js/components.js?v=4';
 
 const portals = [
     {

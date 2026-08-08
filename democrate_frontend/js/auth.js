@@ -1,5 +1,5 @@
-// js/auth.js?v=5 — thin adapter over the single session store in state.js?v=5
-import { state, setSession, loadSession, logout as stateLogout } from './state.js?v=5';
+// js/auth.js — thin adapter over the single session store in state.js
+import { state, setSession, loadSession, logout as stateLogout } from './state.js';
 
 export const Auth = {
     setSession(token, user) {

@@ -1,8 +1,8 @@
-// views/ratings.js?v=5 — anonymous teacher feedback (students only).
-import { CONFIG } from '../js/config.js?v=5';
-import { api } from '../js/api.js?v=5';
-import { Auth } from '../js/auth.js?v=5';
-import { Navbar, Avatar, Empty, Footer, showToast } from '../js/components.js?v=5';
+// views/ratings.js — anonymous teacher feedback (students only).
+import { CONFIG } from '../js/config.js';
+import { api } from '../js/api.js';
+import { Auth } from '../js/auth.js';
+import { Navbar, Avatar, Empty, Footer, showToast } from '../js/components.js?v=4';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

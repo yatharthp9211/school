@@ -1,4 +1,4 @@
-// js/config.js?v=5
+// js/config.js
 // Configuration: school identity, theming, thresholds, API endpoints.
 
 export const CONFIG = {

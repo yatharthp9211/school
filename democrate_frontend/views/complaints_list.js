@@ -1,8 +1,8 @@
-// views/complaints_list.js?v=5 — the public, verified feed (all roles can view & vote).
-import { CONFIG } from '../js/config.js?v=5';
-import { api } from '../js/api.js?v=5';
-import { Auth } from '../js/auth.js?v=5';
-import { Navbar, ComplaintCard, Empty } from '../js/components.js?v=5';
+// views/complaints_list.js — the public, verified feed (all roles can view & vote).
+import { CONFIG } from '../js/config.js';
+import { api } from '../js/api.js';
+import { Auth } from '../js/auth.js';
+import { Navbar, ComplaintCard, Empty } from '../js/components.js?v=4';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

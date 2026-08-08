@@ -1,4 +1,4 @@
-// js/state.js?v=5 — single source of truth for the frontend
+// js/state.js — single source of truth for the frontend
 // Session + theme live under ONE localStorage key each (no dual-key drift).
 
 const SESSION_KEY = 'democrate_session';
