@@ -10,7 +10,7 @@ from dependencies import get_current_active_student, client_ip
 router = APIRouter()
 
 
-@router.post("/", response_model=schemas.RatingResponse)
+@router.post("", response_model=schemas.RatingResponse)
 def create_rating(
     rating_in: schemas.RatingCreate,
     request: Request,

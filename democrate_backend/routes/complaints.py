@@ -23,7 +23,7 @@ def _page(skip: int, limit: int) -> tuple[int, int]:
     return max(skip, 0), min(max(limit, 1), MAX_PAGE)
 
 
-@router.post("/", response_model=schemas.ComplaintResponse)
+@router.post("", response_model=schemas.ComplaintResponse)
 def create_complaint(
     complaint_in: schemas.ComplaintCreate,
     request: Request,
@@ -56,7 +56,7 @@ def create_complaint(
     return complaint
 
 
-@router.get("/", response_model=List[schemas.ComplaintResponse])
+@router.get("", response_model=List[schemas.ComplaintResponse])
 def read_complaints(
     skip: int = 0,
     limit: int = 100,

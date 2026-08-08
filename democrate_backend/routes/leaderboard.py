@@ -8,7 +8,7 @@ from database import get_db
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("")
 def get_leaderboard(db: Session = Depends(get_db)):
     teachers = (
         db.query(models.User)
