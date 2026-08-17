@@ -85,8 +85,25 @@ def seed_teachers():
               f"{'' if password else f'  password={pw}'}")
 
 
+def seed_developer():
+    user = os.getenv("DEMOCRATE_DEVELOPER_USER")
+    password = os.getenv("DEMOCRATE_DEVELOPER_PASSWORD")
+    if not (user and password):
+        print("SKIP developer: set DEMOCRATE_DEVELOPER_USER / DEMOCRATE_DEVELOPER_PASSWORD to provision a developer.")
+        return
+    if len(password) < 8:
+        print("SKIP developer: DEMOCRATE_DEVELOPER_PASSWORD must be at least 8 characters.")
+        return
+    if password.lower() in _WEAK_PASSWORDS:
+        print("SKIP developer: DEMOCRATE_DEVELOPER_PASSWORD is a known weak/default value. Choose a strong password.")
+        return
+    created = _upsert_user(user, "System Developer", Role.DEVELOPER, password, "System Developer")
+    print(f"Developer '{user}': {'created' if created else 'already exists'}")
+
+
 if __name__ == "__main__":
     seed_admin()
     seed_teachers()
+    seed_developer()
     db.commit()
     print("Seed complete.")

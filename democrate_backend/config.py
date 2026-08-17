@@ -57,9 +57,12 @@ class Settings(BaseSettings):
 
     # Rate limiting (in-memory; adequate for the single-process pilot.
     # Production: rely on Cloudflare edge limits / shared limiter when traffic demands it).
-    AUTH_RATE_LIMIT: int = int(os.getenv("DEMOCRATE_AUTH_RATE_LIMIT", "20"))
-    GENERAL_RATE_LIMIT: int = int(os.getenv("DEMOCRATE_GENERAL_RATE_LIMIT", "120"))
+    AUTH_RATE_LIMIT: int = int(os.getenv("DEMOCRATE_AUTH_RATE_LIMIT", "200"))
+    GENERAL_RATE_LIMIT: int = int(os.getenv("DEMOCRATE_GENERAL_RATE_LIMIT", "1200"))
     RATE_WINDOW_SECONDS: int = int(os.getenv("DEMOCRATE_RATE_WINDOW", "60"))
+
+    # Developer unlock secret
+    DEVELOPER_SECRET_FILE_CONTENT: str = os.getenv("DEMOCRATE_DEVELOPER_SECRET_FILE", "")
 
 
 settings = Settings()

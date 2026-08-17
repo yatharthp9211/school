@@ -86,3 +86,7 @@ def get_current_active_teacher(current_user: models.User = Depends(get_current_u
 
 def get_current_active_admin(current_user: models.User = Depends(get_current_user)):
     return _require_role(current_user, models.Role.ADMIN)
+
+
+def get_current_active_developer(current_user: models.User = Depends(get_current_user)):
+    return _require_role(current_user, models.Role.DEVELOPER)

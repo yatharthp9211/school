@@ -9,6 +9,7 @@ class Role(str, enum.Enum):
     STUDENT = "student"
     TEACHER = "teacher"
     ADMIN = "admin"
+    DEVELOPER = "developer"
 
 
 class ComplaintStatus(str, enum.Enum):
@@ -36,6 +37,9 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)   # admin can disable login
     is_banned = Column(Boolean, default=False, nullable=False)  # cannot submit, can still log in
     false_count = Column(Integer, default=0, nullable=False)    # admin-confirmed false complaints
+
+    # Profile image — base64 data URL (max ~1 MB, enforced at the API layer).
+    image = Column(Text, nullable=True)
 
 
 class Complaint(Base):

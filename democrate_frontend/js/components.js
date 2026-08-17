@@ -139,7 +139,6 @@ function roleLinks(user) {
             return [
                 ['/admin', 'dashboard', 'Dashboard'],
                 ['/admin/complaints', 'inventory_2', 'Complaints'],
-                ['/admin/audit', 'receipt_long', 'Audit'],
                 ['/leaderboard', 'leaderboard', 'Leaderboard'],
                 ['/profile', 'person', 'Profile'],
             ];
@@ -340,6 +339,9 @@ export function Footer() {
         <footer class="flex flex-col items-center gap-1 py-8 mt-8" style="border-top:1px solid var(--color-hairline);color:var(--color-ink-muted);font-size:.8rem">
             <span style="font-family:var(--font-display);font-size:1rem;color:var(--color-ink)">${CONFIG.schoolName}</span>
             <span>${CONFIG.tagline} — your identity stays anonymous to students and teachers.</span>
+            <div style="margin-top: 1rem">
+                <a href="#/developer/login" class="nav-link" style="font-size: .8rem; text-decoration: underline;">Developer Portal</a>
+            </div>
         </footer>
     `;
 }

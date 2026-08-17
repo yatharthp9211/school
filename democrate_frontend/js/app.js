@@ -11,7 +11,7 @@ import { showToast } from './components.js?v=9';
 // ---------------------------------------------------------------------------
 // ?v=N busts the browser's module cache so view updates always take effect.
 // Bump the suffix whenever view files change.
-const V = 5;
+const V = 16;
 const load = (path, exportName, ...args) => () =>
     import(`../views/${path}.js?v=${V}`).then((m) => m[exportName](...args));
 
@@ -32,6 +32,8 @@ router.addRoute('/complaints', () => import('../views/complaints_list.js').then(
 router.addRoute('/leaderboard', () => import('../views/leaderboard.js').then((m) => m.LeaderboardView), { requiresAuth: true });
 router.addRoute('/ratings', () => import('../views/ratings.js').then((m) => m.RatingsView), { requiresAuth: true, role: 'student' });
 router.addRoute('/profile', () => import('../views/profile.js').then((m) => m.ProfileView), { requiresAuth: true });
+router.addRoute('/developer/login', () => import('../views/developer_login.js').then((m) => m.DeveloperLoginView));
+router.addRoute('/developer', () => import('../views/developer_dashboard.js').then((m) => m.DeveloperDashboardView), { requiresAuth: true, role: 'developer' });
 
 // ---------------------------------------------------------------------------
 // Drawer (mobile nav)

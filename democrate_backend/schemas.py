@@ -58,9 +58,29 @@ class UserResponse(BaseModel):
     is_banned: bool = False
     false_count: int = 0
     details: Optional[str] = None
+    has_image: bool = False
 
     class Config:
         from_attributes = True
+
+
+class ProfileUpdate(BaseModel):
+    image: Optional[str] = None  # base64 data URL, max ~1MB
+    name: Optional[str] = Field(None, min_length=1, max_length=80)
+
+    @field_validator("image")
+    @classmethod
+    def validate_image_size(cls, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+        # Enforce max ~1MB base64. base64 is ~33% larger than bytes.
+        # 1MB = 1048576 bytes ≈ 1.4MB base64 string max.
+        if len(v) > 1_400_000:
+            raise ValueError("Image too large. Maximum file size is 1 MB.")
+        # Must be a valid data URL starting with data:image/
+        if not v.startswith("data:image/"):
+            raise ValueError("Image must be a valid image data URL (data:image/...).")
+        return v
 
 
 # ---------------------------------------------------------------------------
@@ -108,7 +128,7 @@ class ComplaintResponse(BaseModel):
     id: str
     anonymous_id: Optional[str]
     text: str
-    category: Optional[str] = Field(None, validation_alias="category")
+    category: Optional[str] = None
     target_teacher: Optional[str] = None
     verifier_teacher: Optional[str] = None
     status: ComplaintStatus

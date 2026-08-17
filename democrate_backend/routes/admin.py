@@ -193,31 +193,3 @@ def enable_user(
     return {"success": True, "message": f"User {user_id} enabled"}
 
 
-@router.get("/audit")
-def audit_log(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_admin),
-):
-    """Admin-only audit trail. Complaints text, passwords, and tokens are never logged."""
-    skip, limit = max(skip, 0), min(max(limit, 1), MAX_PAGE)
-    entries = (
-        db.query(models.AuditLog)
-        .order_by(models.AuditLog.timestamp.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-    return [
-        {
-            "id": e.id,
-            "user_id": e.user_id,
-            "action": e.action,
-            "target": e.target,
-            "details": e.details,
-            "ip_address": e.ip_address,
-            "timestamp": e.timestamp.isoformat() if e.timestamp else None,
-        }
-        for e in entries
-    ]

@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from config import settings
 from dependencies import auth_limiter, general_limiter, client_ip
-from routes import auth, complaints, leaderboard, ratings, admin
+from routes import auth, complaints, leaderboard, ratings, admin, developer
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -74,6 +74,7 @@ app.include_router(complaints.router, prefix=f"{settings.API_V1_STR}/complaints"
 app.include_router(leaderboard.router, prefix=f"{settings.API_V1_STR}/leaderboard", tags=["leaderboard"])
 app.include_router(ratings.router, prefix=f"{settings.API_V1_STR}/ratings", tags=["ratings"])
 app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["admin"])
+app.include_router(developer.router, prefix=f"{settings.API_V1_STR}/developer", tags=["developer"])
 
 
 @app.get("/")

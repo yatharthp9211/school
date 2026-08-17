@@ -1,7 +1,7 @@
 // views/admin_dashboard.js
 import { api } from '../js/api.js';
 import { Auth } from '../js/auth.js';
-import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=9';
+import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=16';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -80,7 +80,6 @@ export const AdminDashboardView = {
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="#/admin/complaints" class="btn btn-ghost">All complaints</a>
-                        <a href="#/admin/audit" class="btn btn-ghost">Audit log</a>
                         <button class="btn btn-ink" data-action="export-csv" data-csv="${csv}">
                             <span class="material-symbols-outlined">download</span>Export CSV
                         </button>

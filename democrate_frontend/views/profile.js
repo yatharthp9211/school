@@ -19,7 +19,7 @@ export const ProfileView = {
         const me = await api.me().catch(() => null);
         const info = me || user;
 
-        // Teachers store subject/classes/photo as JSON in details; students store plain text.
+        // Teachers store subject/classes as JSON in details; students store plain text.
         let detailRows = [];
         let photo = null;
         if (info.role === 'teacher' && info.details) {
@@ -30,13 +30,16 @@ export const ProfileView = {
                         ['Subject', parsed.subject || '—'],
                         ['Classes', parsed.classes || '—'],
                     ];
-                    photo = parsed.photo || null;
                 }
             } catch (e) {
                 detailRows = [['Subject', info.details]];
             }
         } else if (info.details) {
             detailRows = [['Class & section', info.details]];
+        }
+
+        if (info.has_image) {
+            photo = await api.getUserImage(info.id).then(r => r.image).catch(() => null);
         }
 
         const statusBadges = [];
@@ -60,6 +63,20 @@ export const ProfileView = {
                     </div>
                     <div style="margin-left:auto" class="flex flex-wrap gap-2 justify-end">
                         ${statusBadges.join('') || `<span class="badge"><span class="material-symbols-outlined" style="font-size:.95rem">verified</span>Active account</span>`}
+                    </div>
+                </div>
+
+                <div class="card card-padded" style="margin-top:1rem">
+                    <h3 class="display" style="font-size:1.05rem;margin-bottom:.8rem">Profile Picture</h3>
+                    <div class="flex flex-col gap-2">
+                        <label class="label" for="profile-image">Upload image (max 1 MB)</label>
+                        <input type="file" id="profile-image" accept="image/jpeg, image/png, image/gif, image/webp" class="input">
+                        <p class="small muted">Supported: JPG, PNG, GIF, WebP. Max size: 1 MB. Stored as base64 in database.</p>
+                        <span class="field-error-text" id="upload-error" role="alert"></span>
+                        <div style="margin-top:.5rem">
+                            <button class="btn btn-primary btn-sm" id="upload-btn">Save Picture</button>
+                            <button class="btn btn-soft btn-sm" id="remove-btn">Remove Picture</button>
+                        </div>
                     </div>
                 </div>
 
@@ -95,4 +112,64 @@ export const ProfileView = {
             </main>
         `;
     },
+
+    init: () => {
+        const uploadBtn = document.getElementById('upload-btn');
+        const removeBtn = document.getElementById('remove-btn');
+        const fileInput = document.getElementById('profile-image');
+        const errorEl = document.getElementById('upload-error');
+
+        if (!uploadBtn) return;
+
+        uploadBtn.addEventListener('click', async () => {
+            errorEl.textContent = '';
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                errorEl.textContent = 'Please select an image first.';
+                return;
+            }
+            
+            if (file.size > 1048576) {
+                errorEl.textContent = 'File is too large. Maximum size is 1 MB.';
+                return;
+            }
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Saving...';
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64Str = e.target.result;
+                try {
+                    await api.updateProfile({ image: base64Str });
+                    window.location.reload(); // Reload to show the new avatar
+                } catch (err) {
+                    errorEl.textContent = err.message || 'Failed to update profile picture.';
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = 'Save Picture';
+                }
+            };
+            reader.onerror = () => {
+                errorEl.textContent = 'Error reading file.';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Save Picture';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeBtn.addEventListener('click', async () => {
+            errorEl.textContent = '';
+            removeBtn.disabled = true;
+            removeBtn.textContent = 'Removing...';
+            try {
+                await api.updateProfile({ image: "" });
+                window.location.reload();
+            } catch (err) {
+                errorEl.textContent = err.message || 'Failed to remove picture.';
+                removeBtn.disabled = false;
+                removeBtn.textContent = 'Remove Picture';
+            }
+        });
+    }
 };

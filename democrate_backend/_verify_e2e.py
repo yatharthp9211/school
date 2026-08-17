@@ -13,8 +13,8 @@ import urllib.error
 import urllib.request
 
 BASE = "http://127.0.0.1:5000/api/v1"
-ADMIN_PW = "Democrate@2026"
-TEACHER_KEY = "school-test-key-2026"
+ADMIN_PW = "DemocrateAdmin@2026"
+TEACHER_KEY = "yatharth234Sanskar159"
 
 passed, failed = [], []
 
@@ -71,6 +71,21 @@ TEACH, st = login("e2e_teacher", "Teacher123", "teacher")
 check("teacher login", st == 200, f"st={st}")
 ADMIN, st = login("admin", ADMIN_PW, "admin")
 check("admin login (legacy hash)", st == 200, f"st={st}")
+DEV = None
+st_dev1, r_dev1 = req("POST", "/auth/developer/login", {"username": "developer", "password": "Developer@123", "role": "developer"})
+if st_dev1 == 200:
+    temp_token = r_dev1.get("temp_token")
+    boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+    body = f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="secret.key"\r\nContent-Type: text/plain\r\n\r\nThisIsTheSecretUnlockKeyForDemocrateDeveloper2026\r\n--{boundary}--\r\n'.encode()
+    r = urllib.request.Request(BASE + "/auth/developer/unlock", data=body, headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "Authorization": f"Bearer {temp_token}"}, method="POST")
+    try:
+        with urllib.request.urlopen(r) as resp:
+            st, r_dev2 = resp.status, json.loads(resp.read() or b"{}")
+    except urllib.error.HTTPError as e:
+        st, r_dev2 = e.code, json.loads(e.read() or b"{}")
+    if st == 200:
+        DEV = r_dev2.get("access_token")
+check("developer login (2FA)", DEV is not None, f"st1={st_dev1} st2={st if st_dev1==200 else 'skip'}")
 VOTERS = []
 for i in range(1, 6):
     t, st = login(f"dvote_{i}", "Teacher123", "teacher")
@@ -209,19 +224,23 @@ st, lb = req("GET", "/leaderboard")
 row = next((t for t in lb if t["id"] == "e2e_teacher"), None)
 check("verifier penalty recorded", row and row["penaltyCount"] >= 5, f"{row}")
 
-st, log = req("GET", "/admin/audit", token=ADMIN)
+st, log = req("GET", "/developer/audit", token=DEV)
 acts = [e["action"] for e in log]
 check("audit has COMPLAINT_FALSE", any("complaint_false" in a.lower() for a in acts), f"{acts[:5]}")
 
 # ---------------------------------------------------------------------------
-# 5. Ratings (uses the author account; happens before any ban takes effect)
+# 5. Ratings
 # ---------------------------------------------------------------------------
 print("\n=== 5. Ratings ===")
-st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 4, "tags": "Helpful,Clear"}, token=STU)
+st_reg, r_reg = register("e2e_rater", "E2E Rater", "Student123", "student")
+check("register rater", st_reg == 200, f"st={st_reg} {r_reg}")
+STU_RATER, st_log = login("e2e_rater", "Student123", "student")
+check("login rater", st_log == 200, f"st={st_log} token={STU_RATER}")
+st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 4, "tags": "Helpful,Clear"}, token=STU_RATER)
 check("rating submitted", st == 200, f"st={st}")
-st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 6, "tags": "Helpful"}, token=STU)
+st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 6, "tags": "Helpful"}, token=STU_RATER)
 check("rating >5 rejected", st == 422, f"st={st}")
-st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 2, "tags": "NotAllowed,Helpful"}, token=STU)
+st, r = req("POST", "/ratings", {"teacher_id": "T-101", "rating": 2, "tags": "NotAllowed,Helpful"}, token=STU_RATER)
 check("rating upsert + tag sanitize", st == 200, f"st={st} {r}")
 st, lb = req("GET", "/leaderboard")
 row = next((t for t in lb if t["id"] == "T-101"), None)

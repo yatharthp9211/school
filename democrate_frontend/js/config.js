@@ -46,8 +46,10 @@ export const CONFIG = {
 };
 
 // API Configuration
-// Use relative path for API so it automatically works on local, network, and production domains.
-const API_BASE = '/api/v1';
+// Dynamically use the current hostname so mobile testing on the local network works.
+const API_BASE = window.location.port === '8080' || window.location.port === '5000'
+    ? `http://${window.location.hostname}:5000/api/v1`
+    : '/api/v1';
 export const API = {
     BASE: API_BASE,
     LOGIN: `${API_BASE}/auth/login`,
