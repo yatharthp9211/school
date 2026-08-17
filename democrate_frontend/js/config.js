@@ -20,7 +20,7 @@ export const CONFIG = {
         error: "#B3423E",
     },
 
-    // Complaint categories (chosen by the student — no server-side AI).
+    // Complaint categories (chosen by the student â€” no server-side AI).
     categories: [
         "Harassment",
         "Teacher Misconduct",
@@ -68,6 +68,15 @@ export const API = {
     ADMIN_ARCHIVE: `${API_BASE}/admin/archive`,
     ADMIN_AUDIT: `${API_BASE}/admin/audit`,
     ADMIN_USERS: `${API_BASE}/admin/users`,
+    DEVELOPER_LOGIN: `${API_BASE}/auth/developer/login`,
+    DEVELOPER_UNLOCK: `${API_BASE}/auth/developer/unlock`,
+    DEVELOPER_TABLES: `${API_BASE}/developer/tables`,
+    DEVELOPER_TABLE_SCHEMA: `${API_BASE}/developer/tables`,
+    DEVELOPER_QUERY: `${API_BASE}/developer/query`,
+    DEVELOPER_EXECUTE: `${API_BASE}/developer/execute`,
+    DEVELOPER_AUDIT: `${API_BASE}/developer/audit`,
+    DEVELOPER_USERS: `${API_BASE}/developer/users`,
+    DEVELOPER_STATS: `${API_BASE}/developer/stats`,
 };
 
 // Initialize Tailwind config globally (fallback for utility classes; the

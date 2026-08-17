@@ -1,7 +1,7 @@
-// js/auth.js — thin adapter over the single session store in state.js
+﻿// js/auth.js — thin adapter over the single session store in state.js
 import { state, setSession, loadSession, logout as stateLogout } from './state.js';
 
-// Decode the JWT payload (base64url) to read its `exp` without a library.
+// Decode the JWT payload (base64url) to read its exp without a library.
 // Returns epoch-ms or null when the token isn't a parseable 3-part JWT.
 function tokenExpiryMs(token) {
     try {
@@ -18,6 +18,12 @@ function tokenExpiryMs(token) {
 export const Auth = {
     setSession(token, user) {
         setSession(token, user);
+    },
+
+    // Temporarily override the in-memory token without persisting to
+    // localStorage.  Used by the developer two-step unlock flow.
+    setToken(token) {
+        state.token = token;
     },
 
     getToken() {
