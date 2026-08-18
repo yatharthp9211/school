@@ -1,8 +1,8 @@
 // views/complaints_list.js — the public, verified feed (all roles can view & vote).
-import { CONFIG } from '../js/config.js?v=16';
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, ComplaintCard, Empty } from '../js/components.js?v=16';
+import { CONFIG } from '../js/config.js?v=17';
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, ComplaintCard, Empty } from '../js/components.js?v=17';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -31,9 +31,20 @@ export const ComplaintsListView = {
                 </header>
 
                 <div class="card card-padded flex flex-wrap items-end gap-3" style="margin-top:1.2rem">
-                    <div class="field" style="min-width:170px">
+                    <div class="field" style="min-width:160px">
                         <label class="label" for="fb-category">Category</label>
                         <select class="select" id="fb-category">${categoryOptions}</select>
+                    </div>
+                    <div class="field" style="min-width:170px">
+                        <label class="label" for="fb-sort">Sort by</label>
+                        <select class="select" id="fb-sort">
+                            <option value="date-desc">Newest first</option>
+                            <option value="date-asc">Oldest first</option>
+                            <option value="score-desc">Highest score</option>
+                            <option value="score-asc">Lowest score</option>
+                            <option value="text-asc">Complaint (A to Z)</option>
+                            <option value="text-desc">Complaint (Z to A)</option>
+                        </select>
                     </div>
                     <div class="field" style="flex:1;min-width:200px">
                         <label class="label" for="fb-q">Search</label>
@@ -50,6 +61,7 @@ export const ComplaintsListView = {
         const list = document.getElementById('feed-list');
         const qInput = document.getElementById('fb-q');
         const catSel = document.getElementById('fb-category');
+        const sortSel = document.getElementById('fb-sort');
         if (!list) return;
         const user = Auth.getCurrentUser();
 
@@ -58,10 +70,31 @@ export const ComplaintsListView = {
         const render = () => {
             const q = (qInput?.value || '').trim().toLowerCase();
             const cat = catSel?.value || '';
+            const sort = sortSel?.value || 'date-desc';
+
             const rows = all.filter((c) => {
                 if (cat && (c.category || '') !== cat) return false;
                 if (q && !((c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q))) return false;
                 return true;
+            });
+
+            rows.sort((a, b) => {
+                switch (sort) {
+                    case 'date-asc':
+                        return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+                    case 'date-desc':
+                        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                    case 'score-desc':
+                        return (b.score ?? 0) - (a.score ?? 0);
+                    case 'score-asc':
+                        return (a.score ?? 0) - (b.score ?? 0);
+                    case 'text-asc':
+                        return (a.text || '').localeCompare(b.text || '', undefined, { sensitivity: 'base' });
+                    case 'text-desc':
+                        return (b.text || '').localeCompare(a.text || '', undefined, { sensitivity: 'base' });
+                    default:
+                        return 0;
+                }
             });
 
             if (!rows.length) {
@@ -81,9 +114,11 @@ export const ComplaintsListView = {
 
         qInput?.addEventListener('input', render);
         catSel?.addEventListener('change', render);
+        sortSel?.addEventListener('change', render);
 
         api.getComplaints()
             .then((feed) => { all = feed.filter((c) => !c.is_private); render(); })
             .catch(() => { list.innerHTML = Empty('Could not load complaints.', 'error'); });
     },
 };
+
