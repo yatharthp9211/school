@@ -1,9 +1,9 @@
 // js/app.js — bootstrap, routes (lazy views), global action dispatcher, drawer
-import { router } from './router.js?v=9';
-import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=9';
-import { Auth } from './auth.js?v=9';
-import { api } from './api.js?v=9';
-import { showToast } from './components.js?v=9';
+import { router } from './router.js?v=16';
+import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=16';
+import { Auth } from './auth.js?v=16';
+import { api } from './api.js?v=16';
+import { showToast } from './components.js?v=16';
 
 // ---------------------------------------------------------------------------
 // Routes — views are lazy-loaded via dynamic import (code-split per route)
