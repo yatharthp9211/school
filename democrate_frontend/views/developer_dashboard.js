@@ -1,7 +1,7 @@
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
-import { ThemeToggle, esc, showToast } from '../js/components.js';
-import { router } from '../js/router.js';
+import { api } from '../js/api.js?v=16';
+import { Auth } from '../js/auth.js?v=16';
+import { ThemeToggle, esc, showToast } from '../js/components.js?v=16';
+import { router } from '../js/router.js?v=16';
 
 export const DeveloperDashboardView = {
     render: async () => {
