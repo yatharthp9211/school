@@ -211,17 +211,29 @@ def developer_unlock(
     current_user: models.User = Depends(get_current_active_developer),
 ):
     """Developer second factor: upload unlock file."""
-    # Read the uploaded file
+    # Read the uploaded file with size limit (1 MB max)
     try:
         raw_bytes = file.file.read()
+        if len(raw_bytes) > 1_048_576:  # 1 MB
+            audit.log_action(db, current_user.id, audit.LOGIN_FAILURE, details="dev_unlock_file_too_large", ip=client_ip(request))
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="Unlock file too large (max 1 MB)",
+            )
         try:
             content = raw_bytes.decode('utf-8').strip()
         except UnicodeDecodeError:
             content = raw_bytes.decode('utf-16').strip()
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error reading file: {e}")
-        content = ""
-        
+        audit.log_action(db, current_user.id, audit.LOGIN_FAILURE, details="dev_unlock_read_error", ip=client_ip(request))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to read unlock file",
+        )
+
     print(f"Expected: {settings.DEVELOPER_SECRET_FILE_CONTENT}")
     print(f"Received: {content}")
     print(f"Match: {content == settings.DEVELOPER_SECRET_FILE_CONTENT}")
