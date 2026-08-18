@@ -1,8 +1,8 @@
 // views/admin_complaints.js — full complaint list with status/category filters + live search.
-import { CONFIG } from '../js/config.js?v=16';
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, ComplaintCard, Empty } from '../js/components.js?v=16';
+import { CONFIG } from '../js/config.js?v=17';
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, ComplaintCard, Empty } from '../js/components.js?v=17';
 
 const STATUSES = ['', 'pending', 'published', 'voting', 'flagged', 'moderated', 'resolved', 'archived'];
 
@@ -35,13 +35,24 @@ export const AdminComplaintsView = {
                 </header>
 
                 <form id="filter-form" class="card card-padded flex flex-wrap items-end gap-3" style="margin-top:1.2rem">
-                    <div class="field" style="min-width:150px">
+                    <div class="field" style="min-width:140px">
                         <label class="label" for="f-status">Status</label>
                         <select class="select" id="f-status">${statusOptions}</select>
                     </div>
-                    <div class="field" style="min-width:170px">
+                    <div class="field" style="min-width:150px">
                         <label class="label" for="f-category">Category</label>
                         <select class="select" id="f-category">${categoryOptions}</select>
+                    </div>
+                    <div class="field" style="min-width:160px">
+                        <label class="label" for="f-sort">Sort by</label>
+                        <select class="select" id="f-sort">
+                            <option value="date-desc">Newest first</option>
+                            <option value="date-asc">Oldest first</option>
+                            <option value="score-desc">Highest score</option>
+                            <option value="score-asc">Lowest score</option>
+                            <option value="text-asc">Complaint (A to Z)</option>
+                            <option value="text-desc">Complaint (Z to A)</option>
+                        </select>
                     </div>
                     <div class="field" style="flex:1;min-width:200px">
                         <label class="label" for="f-q">Search</label>
@@ -65,11 +76,32 @@ export const AdminComplaintsView = {
         let all = [];
 
         const render = (rows) => {
-            if (!rows.length) {
+            const sort = document.getElementById('f-sort')?.value || 'date-desc';
+            const sorted = [...rows];
+            sorted.sort((a, b) => {
+                switch (sort) {
+                    case 'date-asc':
+                        return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+                    case 'date-desc':
+                        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                    case 'score-desc':
+                        return (b.score ?? 0) - (a.score ?? 0);
+                    case 'score-asc':
+                        return (a.score ?? 0) - (b.score ?? 0);
+                    case 'text-asc':
+                        return (a.text || '').localeCompare(b.text || '', undefined, { sensitivity: 'base' });
+                    case 'text-desc':
+                        return (b.text || '').localeCompare(a.text || '', undefined, { sensitivity: 'base' });
+                    default:
+                        return 0;
+                }
+            });
+
+            if (!sorted.length) {
                 list.innerHTML = Empty('No complaints match these filters.', 'search_off');
                 return;
             }
-            list.innerHTML = rows.map((c) => ComplaintCard(c, 'admin', user.id)).join('');
+            list.innerHTML = sorted.map((c) => ComplaintCard(c, 'admin', user.id)).join('');
         };
 
         const apply = async () => {
@@ -97,8 +129,12 @@ export const AdminComplaintsView = {
             apply();
         });
 
-        // Initial load uses the server's unfiltered list rendered in render() — but we
-        // re-fetch here so the status/category/server filtering path is exercised.
+        document.getElementById('f-sort')?.addEventListener('change', () => {
+            const q = document.getElementById('f-q')?.value.trim().toLowerCase() || '';
+            render(q ? all.filter((c) => (c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q)) : all);
+        });
+
         apply();
     },
 };
+

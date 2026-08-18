@@ -11,7 +11,7 @@ import { showToast } from './components.js?v=16';
 // ---------------------------------------------------------------------------
 // ?v=N busts the browser's module cache so view updates always take effect.
 // Bump the suffix whenever view files change.
-const V = 16;
+const V = 17;
 const load = (path, exportName, ...args) => () =>
     import(`../views/${path}.js?v=${V}`).then((m) => m[exportName](...args));
 
@@ -22,18 +22,18 @@ router.addRoute('/login/admin', load('login', 'LoginView', 'admin'));
 router.addRoute('/register/student', load('register', 'RegisterView', 'student'));
 router.addRoute('/register/teacher', load('register', 'RegisterView', 'teacher'));
 
-router.addRoute('/student', () => import('../views/student_dashboard.js').then((m) => m.StudentDashboardView), { requiresAuth: true, role: 'student' });
-router.addRoute('/complaint', () => import('../views/complaint_form.js').then((m) => m.ComplaintFormView), { requiresAuth: true, role: 'student' });
-router.addRoute('/teacher', () => import('../views/teacher_dashboard.js').then((m) => m.TeacherDashboardView), { requiresAuth: true, role: 'teacher' });
-router.addRoute('/admin', () => import('../views/admin_dashboard.js').then((m) => m.AdminDashboardView), { requiresAuth: true, role: 'admin' });
-router.addRoute('/admin/complaints', () => import('../views/admin_complaints.js').then((m) => m.AdminComplaintsView), { requiresAuth: true, role: 'admin' });
-router.addRoute('/admin/audit', () => import('../views/admin_audit.js').then((m) => m.AdminAuditView), { requiresAuth: true, role: 'admin' });
-router.addRoute('/complaints', () => import('../views/complaints_list.js').then((m) => m.ComplaintsListView), { requiresAuth: true });
-router.addRoute('/leaderboard', () => import('../views/leaderboard.js').then((m) => m.LeaderboardView), { requiresAuth: true });
-router.addRoute('/ratings', () => import('../views/ratings.js').then((m) => m.RatingsView), { requiresAuth: true, role: 'student' });
-router.addRoute('/profile', () => import('../views/profile.js').then((m) => m.ProfileView), { requiresAuth: true });
-router.addRoute('/developer/login', () => import('../views/developer_login.js').then((m) => m.DeveloperLoginView));
-router.addRoute('/developer', () => import('../views/developer_dashboard.js').then((m) => m.DeveloperDashboardView), { requiresAuth: true, role: 'developer' });
+router.addRoute('/student', () => import(`../views/student_dashboard.js?v=${V}`).then((m) => m.StudentDashboardView), { requiresAuth: true, role: 'student' });
+router.addRoute('/complaint', () => import(`../views/complaint_form.js?v=${V}`).then((m) => m.ComplaintFormView), { requiresAuth: true, role: 'student' });
+router.addRoute('/teacher', () => import(`../views/teacher_dashboard.js?v=${V}`).then((m) => m.TeacherDashboardView), { requiresAuth: true, role: 'teacher' });
+router.addRoute('/admin', () => import(`../views/admin_dashboard.js?v=${V}`).then((m) => m.AdminDashboardView), { requiresAuth: true, role: 'admin' });
+router.addRoute('/admin/complaints', () => import(`../views/admin_complaints.js?v=${V}`).then((m) => m.AdminComplaintsView), { requiresAuth: true, role: 'admin' });
+router.addRoute('/admin/audit', () => import(`../views/admin_audit.js?v=${V}`).then((m) => m.AdminAuditView), { requiresAuth: true, role: 'admin' });
+router.addRoute('/complaints', () => import(`../views/complaints_list.js?v=${V}`).then((m) => m.ComplaintsListView), { requiresAuth: true });
+router.addRoute('/leaderboard', () => import(`../views/leaderboard.js?v=${V}`).then((m) => m.LeaderboardView), { requiresAuth: true });
+router.addRoute('/ratings', () => import(`../views/ratings.js?v=${V}`).then((m) => m.RatingsView), { requiresAuth: true, role: 'student' });
+router.addRoute('/profile', () => import(`../views/profile.js?v=${V}`).then((m) => m.ProfileView), { requiresAuth: true });
+router.addRoute('/developer/login', () => import(`../views/developer_login.js?v=${V}`).then((m) => m.DeveloperLoginView));
+router.addRoute('/developer', () => import(`../views/developer_dashboard.js?v=${V}`).then((m) => m.DeveloperDashboardView), { requiresAuth: true, role: 'developer' });
 
 // ---------------------------------------------------------------------------
 // Drawer (mobile nav)
