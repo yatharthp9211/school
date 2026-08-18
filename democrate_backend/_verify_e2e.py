@@ -1,7 +1,7 @@
 """End-to-end verification for the Democrate hardening (Phase 4).
 
-Server must run with DEMOCRATE_TEACHER_KEY=school-test-key-2026.
-Admin password must already be reset to Democrate@2026.
+Server must run with DEMOCRATE_TEACHER_KEY=yatharth234Sanskar159.
+Admin password must already be reset to DemocrateAdmin@2026.
 
     python _verify_e2e.py
 Exit code 0 = all checks passed.
@@ -9,6 +9,7 @@ Exit code 0 = all checks passed.
 import json
 import sys
 import time
+import subprocess
 import urllib.error
 import urllib.request
 
@@ -53,6 +54,18 @@ def register(uid, name, pw, role, **extra):
     body.update(extra)
     return req("POST", path, body)
 
+
+# ---------------------------------------------------------------------------
+# Run test data reset BEFORE starting tests to ensure clean DB state
+# ---------------------------------------------------------------------------
+print("=== Resetting test data ===")
+result = subprocess.run([sys.executable, "_reset_test_data.py"], capture_output=True, text=True, cwd=".")
+if result.returncode != 0:
+    print(f"Warning: _reset_test_data.py returned {result.returncode}: {result.stderr}")
+else:
+    print(result.stdout.strip())
+# Allow time for DB commits to fully propagate
+time.sleep(2)
 
 # ---------------------------------------------------------------------------
 # 0. Prepare accounts (idempotent)
@@ -268,11 +281,11 @@ check("admin cannot disable self", st == 400, f"st={st}")
 print("\n=== 7. Rate limiting ===")
 time.sleep(61)  # fresh auth window
 throttled = 0
-for _ in range(25):
+for _ in range(210):  # exceed AUTH_RATE_LIMIT (default 200)
     st, _ = req("POST", "/auth/login", {"username": "admin", "password": "wrongpass1", "role": "admin"})
     if st == 429:
         throttled += 1
-check("burst of logins gets throttled (429)", throttled >= 1, f"{throttled}/25 throttled")
+check("burst of logins gets throttled (429)", throttled >= 1, f"{throttled}/210 throttled")
 
 # ---------------------------------------------------------------------------
 # Summary

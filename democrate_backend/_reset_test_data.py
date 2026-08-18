@@ -20,6 +20,14 @@ test_user_ids = [u.id for u in db.query(User).all() if _is_test(u.id)]
 print("test users:", test_user_ids)
 
 if test_user_ids:
+    # First, reset discipline flags on test users so they aren't stuck as banned
+    # for subsequent test runs (the test creates fresh users but old banned flags persist).
+    db.query(User).filter(User.id.in_(test_user_ids)).update(
+        {"is_banned": False, "false_count": 0, "is_active": True},
+        synchronize_session=False,
+    )
+    db.commit()
+
     # Child rows first.
     db.query(Vote).filter(Vote.user_id.in_(test_user_ids)).delete(synchronize_session=False)
     db.query(TeacherRating).filter(
