@@ -1,7 +1,7 @@
 // views/student_dashboard.js
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
-import { Navbar, ComplaintCard, Empty, Stat, Footer, esc } from '../js/components.js?v=9';
+import { api } from '../js/api.js?v=16';
+import { Auth } from '../js/auth.js?v=16';
+import { Navbar, ComplaintCard, Empty, Stat, Footer, esc } from '../js/components.js?v=16';
 
 export const StudentDashboardView = {
     render: async () => {

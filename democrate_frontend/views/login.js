@@ -1,8 +1,8 @@
 // views/login.js
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
-import { router } from '../js/router.js';
-import { showToast, ThemeToggle } from '../js/components.js?v=9';
+import { api } from '../js/api.js?v=16';
+import { Auth } from '../js/auth.js?v=16';
+import { router } from '../js/router.js?v=16';
+import { showToast, ThemeToggle } from '../js/components.js?v=16';
 
 export function LoginView(role) {
     const meta = {

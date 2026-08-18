@@ -1,7 +1,7 @@
 // views/admin_audit.js — the immutable accountability trail (admin only).
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
-import { Navbar, Empty } from '../js/components.js?v=9';
+import { api } from '../js/api.js?v=16';
+import { Auth } from '../js/auth.js?v=16';
+import { Navbar, Empty } from '../js/components.js?v=16';
 
 function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

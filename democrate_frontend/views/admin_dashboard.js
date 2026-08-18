@@ -1,6 +1,6 @@
 // views/admin_dashboard.js
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
+import { api } from '../js/api.js?v=16';
+import { Auth } from '../js/auth.js?v=16';
 import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=16';
 
 function esc(s) {

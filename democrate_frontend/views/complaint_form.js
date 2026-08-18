@@ -1,8 +1,8 @@
 // views/complaint_form.js
-import { CONFIG } from '../js/config.js';
-import { api } from '../js/api.js';
-import { Auth } from '../js/auth.js';
-import { Navbar, showToast, esc } from '../js/components.js?v=9';
+import { CONFIG } from '../js/config.js?v=16';
+import { api } from '../js/api.js?v=16';
+import { Auth } from '../js/auth.js?v=16';
+import { Navbar, showToast, esc } from '../js/components.js?v=16';
 
 const DRAFT_KEY = 'democrate_complaint_draft';
 const MIN_LEN = 20;
