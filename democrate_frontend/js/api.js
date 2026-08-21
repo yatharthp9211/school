@@ -1,10 +1,10 @@
 // js/api.js — fetch wrapper + typed API methods
 
-import { API } from './config.js';
+import { API } from './config.js?v=18';
 
-import { Auth } from './auth.js';
+import { Auth } from './auth.js?v=18';
 
-import { router } from './router.js';
+import { router } from './router.js?v=18';
 
 
 

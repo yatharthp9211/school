@@ -1,7 +1,7 @@
 // views/leaderboard.js — teacher leaderboard with podium, search, and subject filter.
-import { api } from '../js/api.js?v=17';
-import { Auth } from '../js/auth.js?v=17';
-import { Navbar, TeacherCard, Avatar, Empty, Footer, esc, Unauthorized } from '../js/components.js?v=17';
+import { api } from '../js/api.js?v=18';
+import { Auth } from '../js/auth.js?v=18';
+import { Navbar, TeacherCard, Avatar, Empty, Footer, esc, Unauthorized } from '../js/components.js?v=18';
 
 function PodiumSlot(teacher, rank) {
     if (!teacher) return '';
