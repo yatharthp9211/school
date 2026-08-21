@@ -35,6 +35,14 @@ export const CONFIG = {
     // Rating tags (allowlisted server-side too).
     ratingTags: ["Helpful", "Clear", "Fair", "Punctual", "Passionate", "Empathetic"],
 
+    // Status groupings used across dashboards (one source of truth).
+    statusGroups: {
+        LIVE: ["published", "voting"],
+        PENDING: ["pending", "moderated"],
+        RESOLVED: ["resolved"],
+        ARCHIVED: ["archived"],
+    },
+
     // Voting Weights
     studentVote: 1,
     teacherVote: 10,

@@ -1,9 +1,9 @@
 // views/developer_login.js — developer authentication with file unlock
 
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { router } from '../js/router.js?v=16';
-import { showToast, ThemeToggle } from '../js/components.js?v=16';
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { router } from '../js/router.js?v=17';
+import { showToast, ThemeToggle, Loading } from '../js/components.js?v=17';
 
 
 
@@ -14,7 +14,7 @@ export const DeveloperLoginView = {
 
                 setTimeout(() => router.navigate('/developer'), 0);
 
-                return '<div class="card card-padded" style="margin-top:8rem;text-align:center"><div class="skeleton line w-60" style="margin:0 auto"></div></div>';
+                return Loading('Redirecting…');
 
             }
 

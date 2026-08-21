@@ -1,20 +1,21 @@
 // views/student_dashboard.js
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, ComplaintCard, Empty, Stat, Footer, esc } from '../js/components.js?v=16';
+import { CONFIG } from '../js/config.js?v=17';
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, ComplaintCard, Empty, Stat, Footer, esc, Unauthorized } from '../js/components.js?v=17';
 
 export const StudentDashboardView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user || user.role !== 'student') {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
 
         const my = await api.getMyComplaints();
         const total = my.length;
-        const published = my.filter((c) => ['published', 'voting'].includes((c.status || '').toLowerCase())).length;
-        const pending = my.filter((c) => ['pending', 'moderated'].includes((c.status || '').toLowerCase())).length;
-        const resolved = my.filter((c) => (c.status || '').toLowerCase() === 'resolved').length;
+        const published = my.filter((c) => CONFIG.statusGroups.LIVE.includes((c.status || '').toLowerCase())).length;
+        const pending = my.filter((c) => CONFIG.statusGroups.PENDING.includes((c.status || '').toLowerCase())).length;
+        const resolved = my.filter((c) => CONFIG.statusGroups.RESOLVED.includes((c.status || '').toLowerCase())).length;
 
         const cards = my.length
             ? my.map((c) => ComplaintCard(c, 'student', user.id)).join('')

@@ -111,7 +111,7 @@ def vote_complaint(
     if complaint.author_id and complaint.author_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot vote on your own complaint.")
 
-    weight = 10 if current_user.role == models.Role.TEACHER else 1
+    weight = settings.TEACHER_VOTE_WEIGHT if current_user.role == models.Role.TEACHER else 1
     try:
         crud.create_vote(db, complaint, current_user, vote_in.type, weight)
     except crud.DuplicateVoteError:
@@ -124,12 +124,12 @@ def vote_complaint(
     # flags the complaint for admin review. No identity exposure, no automatic penalty.
     if (
         complaint.status in (models.ComplaintStatus.PUBLISHED, models.ComplaintStatus.VOTING)
-        and complaint.weighted_score() <= settings.FALSE_SCORE_THRESHOLD
+        and complaint.score <= settings.FALSE_SCORE_THRESHOLD
     ):
         complaint.status = models.ComplaintStatus.FLAGGED
         db.commit()
         audit.log_action(db, None, audit.COMPLAINT_FLAGGED, target=complaint.id,
-                         details=f"score={complaint.weighted_score()}", ip=client_ip(request))
+                         details=f"score={complaint.score}", ip=client_ip(request))
 
     return {"success": True, "message": "Vote recorded"}
 

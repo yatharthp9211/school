@@ -63,6 +63,17 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     if user is None:
         raise credentials_exception
 
+    # A `temp` token is the first factor of the developer 2FA flow — it is only
+    # valid for the file-upload unlock step (guarded separately by
+    # get_developer_temp on /auth/developer/unlock). Reject it everywhere else so
+    # the second factor can't be skipped.
+    if payload.get("temp") is True:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Complete the unlock step to finish signing in.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     # Disabled accounts cannot authenticate.
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account disabled. Contact an administrator.")
@@ -90,3 +101,28 @@ def get_current_active_admin(current_user: models.User = Depends(get_current_use
 
 def get_current_active_developer(current_user: models.User = Depends(get_current_user)):
     return _require_role(current_user, models.Role.DEVELOPER)
+
+
+def get_developer_temp(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    """The developer 2FA unlock step accepts only a *temp* token issued by
+    /auth/developer/login (first factor). The token must carry temp=True and
+    belong to a developer account. Full auth is granted only after the file
+    upload succeeds in the route itself."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None or payload.get("temp") is not True:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        raise credentials_exception
+    return _require_role(user, models.Role.DEVELOPER)
+

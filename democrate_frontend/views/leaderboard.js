@@ -1,11 +1,7 @@
 // views/leaderboard.js — teacher leaderboard with podium, search, and subject filter.
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, TeacherCard, Avatar, Empty, Footer } from '../js/components.js?v=16';
-
-function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, TeacherCard, Avatar, Empty, Footer, esc, Unauthorized } from '../js/components.js?v=17';
 
 function PodiumSlot(teacher, rank) {
     if (!teacher) return '';
@@ -30,7 +26,7 @@ export const LeaderboardView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user) {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
 
         const leaderboard = await api.getLeaderboard();

@@ -1,19 +1,20 @@
 // views/teacher_dashboard.js
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, ComplaintCard, Empty, Stat, Footer, esc } from '../js/components.js?v=16';
+import { CONFIG } from '../js/config.js?v=17';
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, ComplaintCard, Empty, Stat, Footer, esc, Unauthorized } from '../js/components.js?v=17';
 
 export const TeacherDashboardView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user || user.role !== 'teacher') {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
 
         const feed = await api.getComplaints(); // role-aware: assigned pending + public feed
         const assignedPending = feed.filter((c) => c.verifier_teacher === user.id && (c.status || '').toLowerCase() === 'pending');
-        const published = feed.filter((c) => ['published', 'voting'].includes((c.status || '').toLowerCase())).length;
-        const resolved = feed.filter((c) => (c.status || '').toLowerCase() === 'resolved').length;
+        const published = feed.filter((c) => CONFIG.statusGroups.LIVE.includes((c.status || '').toLowerCase())).length;
+        const resolved = feed.filter((c) => CONFIG.statusGroups.RESOLVED.includes((c.status || '').toLowerCase())).length;
         const liveFeed = feed.filter((c) => !(c.verifier_teacher === user.id && (c.status || '').toLowerCase() === 'pending'));
 
         const verifyCards = assignedPending.length

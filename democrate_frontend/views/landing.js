@@ -1,7 +1,7 @@
-import { CONFIG } from '../js/config.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { router } from '../js/router.js?v=16';
-import { Footer, ThemeToggle } from '../js/components.js?v=16';
+import { CONFIG } from '../js/config.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { router } from '../js/router.js?v=17';
+import { Footer, ThemeToggle, Loading } from '../js/components.js?v=17';
 
 const portals = [
     {
@@ -26,7 +26,7 @@ export const LandingView = {
         if (Auth.isLoggedIn()) {
             const user = Auth.getCurrentUser();
             setTimeout(() => router.navigate(`/${user.role}`), 0);
-            return '<div class="card card-padded" style="margin-top:8rem;text-align:center"><div class="skeleton line w-60" style="margin:0 auto"></div></div>';
+            return Loading('Redirecting…');
         }
 
         const portalCards = portals.map((p, i) => `

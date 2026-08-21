@@ -1,8 +1,15 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Enum, Boolean, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import enum
 from database import Base
+
+
+def _utcnow():
+    """Timezone-aware UTC timestamp. SQLAlchemy calls this per-insert; we avoid
+    the deprecated datetime.utcnow() (removed in 3.13+) and return aware datetimes
+    so lexical ordering and isoformat parsing stay correct across SQLite/py."""
+    return datetime.now(timezone.utc)
 
 
 class Role(str, enum.Enum):
@@ -64,7 +71,7 @@ class Complaint(Base):
     category = Column(String, nullable=True)
 
     status = Column(Enum(ComplaintStatus), default=ComplaintStatus.PENDING)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
     is_private = Column(Boolean, default=False, nullable=False)  # private = only admin sees it
 
     # Admin-confirmed false allegation (set only after admin review, never automatically).
@@ -79,19 +86,14 @@ class Complaint(Base):
     # Relationships
     votes = relationship("Vote", back_populates="complaint")
 
-    def weighted_score(self) -> int:
+    @property
+    def score(self) -> int:
+        """Weighted community score: student votes ×1, teacher votes ×10. Read by
+        the API's `score` field (Pydantic from_attributes reads properties)."""
         return (
             (self.student_up or 0) - (self.student_down or 0)
             + 10 * (self.teacher_up or 0) - 10 * (self.teacher_down or 0)
         )
-
-    # Expose the weighted score under the API's `score` field. Pydantic's
-    # from_attributes reads properties, so ComplaintResponse.score now carries
-    # the real value instead of silently defaulting to 0 (the ORM previously
-    # had no `score` attribute).
-    @property
-    def score(self) -> int:
-        return self.weighted_score()
 
 
 class VoteType(str, enum.Enum):
@@ -110,7 +112,7 @@ class Vote(Base):
     user_id = Column(String, ForeignKey("users.id"))
     vote_type = Column(Enum(VoteType))
     weight = Column(Integer, default=1)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=_utcnow)
 
     complaint = relationship("Complaint", back_populates="votes")
 
@@ -127,7 +129,7 @@ class TeacherRating(Base):
     student_id = Column(String, ForeignKey("users.id"))
     rating = Column(Integer)  # 1 to 5
     tags = Column(String, nullable=True)  # Comma separated allowlisted tags
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=_utcnow)
 
 
 class AuditLog(Base):
@@ -138,5 +140,5 @@ class AuditLog(Base):
     action = Column(String, nullable=False)
     target = Column(String, nullable=True)
     details = Column(String, nullable=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=_utcnow)
     ip_address = Column(String, nullable=True)

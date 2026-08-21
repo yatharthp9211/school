@@ -1,9 +1,9 @@
 // js/app.js — bootstrap, routes (lazy views), global action dispatcher, drawer
-import { router } from './router.js?v=16';
-import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=16';
-import { Auth } from './auth.js?v=16';
-import { api } from './api.js?v=16';
-import { showToast } from './components.js?v=16';
+import { router } from './router.js?v=17';
+import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=17';
+import { Auth } from './auth.js?v=17';
+import { api } from './api.js?v=17';
+import { showToast } from './components.js?v=17';
 
 // ---------------------------------------------------------------------------
 // Routes — views are lazy-loaded via dynamic import (code-split per route)
@@ -101,6 +101,8 @@ document.addEventListener('click', async (e) => {
             stateLogout();
             showToast('Signed out.');
             router.navigate('/');
+            // Force route handling in case hashchange doesn't fire reliably
+            setTimeout(() => router.handleRoute(), 0);
             break;
 
         case 'vote': {
