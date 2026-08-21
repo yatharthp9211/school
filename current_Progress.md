@@ -21,6 +21,6 @@
   - Live browser testing verified authentication, teacher/student dashboards, and instant logout flows.
 
 ## Next Steps
-- Implement and test the Zero-Shot AI classifier on live complaints.
 - Monitor real-world pilot testing and evaluate Cloudflare Tunnel latency under load.
-- Gather feedback from administrators and students during the pilot rollout.
+- Gather feedback from administrators, teachers, and students during the pilot rollout.
+- Conduct final security reviews on production access controls.

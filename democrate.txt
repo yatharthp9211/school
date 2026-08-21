@@ -39,9 +39,6 @@ Student      Teacher     Administrator
  Identity Table  Issues   Leaderboard
                   │
                   ▼
-      Local AI Zero-Shot Classifier
-                  │
-                  ▼
            Administrative Dashboard
 
 ================================================================================
@@ -572,12 +569,8 @@ ANONYMOUS SCHOOL COMPLAINT SYSTEM - ALGORITHM & LOGIC FLOW
 
 SYSTEM INITIALIZATION
 
-1.1 Initialize Web Server (e.g., Flask/Django).
-1.2 Initialize SQL Database with 3 tables:
-- Table 1: Identity (Name, ID, PasswordHash, Category, Class_Subject, Fake_Count, Is_Banned)
-- Table 2: Issues (Complaint_ID, Comment, Author_ID, Verifier_ID, Is_Verified, Student_Upvotes, Teacher_Upvotes, Student_Downvotes, Teacher_Downvotes, Status, AI_Category, Targeted_Teacher_ID)
-- Table 3: Leaderboard (Teacher_ID, Rating_Score, Positive_Resolutions, Penalties)
-1.3 Load local Zero-Shot Classification AI model on the server.
+1.1 Initialize Web Server (FastAPI).
+1.2 Initialize SQL Database with tables (Users, Complaints, Ratings, Audit).
 
 AUTHENTICATION & REGISTRATION MODULE
 
@@ -603,15 +596,14 @@ COMPLAINT SUBMISSION & VERIFICATION MODULE
 3.1 STUDENT SUBMITS COMPLAINT:
 IF Student Is_Banned == TRUE:
 RETURN "Account banned from submitting complaints."
-PROMPT for: Complaint Text, Targeted Teacher (Optional), Verifying Teacher (Selected from list).
-PASS Complaint Text to Zero-Shot AI Model -> RETURN AI_Category.
+PROMPT for: Complaint Text, Category (Selected from list), Targeted Teacher (Optional), Verifying Teacher (Selected from list).
 INSERT into Issues table:
 - Comment = Complaint Text
+- Category = Selected Category
 - Author_ID = Student's Unique_ID (Kept hidden from UI)
 - Verifier_ID = Selected Teacher's Unique_ID
 - Is_Verified = FALSE
 - Status = 'Pending'
-- AI_Category = Returned AI Category
 
 3.2 TEACHER VERIFICATION PROCESS:
 FETCH all Issues where Verifier_ID = Logged-in Teacher's ID AND Is_Verified = FALSE.
