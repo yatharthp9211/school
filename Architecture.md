@@ -23,14 +23,11 @@ Student      Teacher     Administrator   Developer (2FA)
  Identity Table  Issues   Leaderboard
                   │
                   ▼
-      Local AI Zero-Shot Classifier
-                  │
-                  ▼
-           Administrative Dashboard
+       Administrative Dashboard
 ```
 
-## Local AI Pipeline
-Whenever a complaint is submitted, it is processed via a Zero-Shot Classification model into the following categories:
+## Complaint Categories
+Students select from predefined standard categories when submitting a report:
 - Harassment
 - Teacher Misconduct
 - Infrastructure
