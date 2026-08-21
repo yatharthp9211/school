@@ -1,0 +1,13 @@
+If we want to solve a problem in our school, we first need to know that it exists. Someone has to be willing to speak up. But right now, there is a major barrier to that communication.
+When a student raises an issue, there is almost always a fear of backlash. If a student reports a problem—especially if it involves someone in a position of authority or a peer who might retaliate—they are terrified of being targeted, treated differently, or looked down upon. Because of this fear, the victims stay silent. The administration stays unaware. And the problems go unresolved.
+
+
+So, I asked myself two questions:
+What if no one knew who raised the voice?
+What if we could shift the entire focus away from who reported the problem, and entirely onto solving the problem itself?
+
+
+To solve this, I built Democrate.
+Democrate is a secure, anonymous community platform that I developed from scratch. It bridges the communication gap by creating a highly controlled, safe space where students can report issues without ever risking their identity.
+But it’s not just a free-for-all complaint box. It is designed with strict adult oversight. Before any issue goes public, it must be verified by a teacher. And if students try to submit fake allegations, the system mathematically detects it, flags the users to the administration, and bans them.
+With this vision, I want to introduce Democrate to you today: a tool to foster a true voice and safety in our school, protecting the vulnerable while giving you, the administration, the clear data you need to maintain a positive school environment.
