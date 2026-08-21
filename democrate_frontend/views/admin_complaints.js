@@ -2,22 +2,16 @@
 import { CONFIG } from '../js/config.js?v=17';
 import { api } from '../js/api.js?v=17';
 import { Auth } from '../js/auth.js?v=17';
-import { Navbar, ComplaintCard, Empty } from '../js/components.js?v=17';
+import { Navbar, ComplaintCard, Empty, esc, Unauthorized, paginateRows } from '../js/components.js?v=17';
 
 const STATUSES = ['', 'pending', 'published', 'voting', 'flagged', 'moderated', 'resolved', 'archived'];
-
-function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
 
 export const AdminComplaintsView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user || user.role !== 'admin') {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
-
-        const all = await api.adminGetComplaints({ limit: 100 });
 
         const statusOptions = STATUSES
             .map((s) => `<option value="${s}">${s === '' ? 'All statuses' : s[0].toUpperCase() + s.slice(1)}</option>`)
@@ -75,8 +69,10 @@ export const AdminComplaintsView = {
 
         let all = [];
 
-        const render = (rows) => {
+        const sortAndFilter = (rows) => {
             const sort = document.getElementById('f-sort')?.value || 'date-desc';
+            const q = document.getElementById('f-q')?.value.trim().toLowerCase() || '';
+
             const sorted = [...rows];
             sorted.sort((a, b) => {
                 switch (sort) {
@@ -97,11 +93,20 @@ export const AdminComplaintsView = {
                 }
             });
 
-            if (!sorted.length) {
+            if (q) {
+                return sorted.filter((c) =>
+                    (c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q)
+                );
+            }
+            return sorted;
+        };
+
+        const render = (rows) => {
+            if (!rows.length) {
                 list.innerHTML = Empty('No complaints match these filters.', 'search_off');
                 return;
             }
-            list.innerHTML = sorted.map((c) => ComplaintCard(c, 'admin', user.id)).join('');
+            list.innerHTML = rows.map((c) => ComplaintCard(c, 'admin', user.id)).join('');
         };
 
         const apply = async () => {
@@ -109,14 +114,13 @@ export const AdminComplaintsView = {
             try {
                 const status = document.getElementById('f-status').value;
                 const category = document.getElementById('f-category').value;
-                const q = document.getElementById('f-q').value.trim().toLowerCase();
 
                 if (status || category) {
-                    all = await api.adminGetComplaints({ limit: 100, status, category });
+                    all = await api.adminGetComplaints({ limit: 200, status, category });
                 } else {
-                    all = await api.adminGetComplaints({ limit: 100 });
+                    all = await api.adminGetComplaints({ limit: 200 });
                 }
-                render(q ? all.filter((c) => (c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q)) : all);
+                render(sortAndFilter(all));
             } catch (err) {
                 list.innerHTML = Empty(err.message || 'Could not load complaints.', 'error');
             } finally {
@@ -124,17 +128,39 @@ export const AdminComplaintsView = {
             }
         };
 
+        // Re-render on sort change (no new fetch needed)
+        document.getElementById('f-sort')?.addEventListener('change', () => {
+            render(sortAndFilter(all));
+        });
+
+        // Search input - debounced client-side filter
+        let searchTimeout;
+        document.getElementById('f-q')?.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => render(sortAndFilter(all)), 150);
+        });
+
+        // Initial load with pagination
+        paginateRows({
+            listEl: list,
+            getRows: async () => {
+                const status = document.getElementById('f-status').value;
+                const category = document.getElementById('f-category').value;
+                if (status || category) {
+                    return api.adminGetComplaints({ limit: 200, status, category });
+                }
+                return api.adminGetComplaints({ limit: 200 });
+            },
+            renderRow: (c) => ComplaintCard(c, 'admin', user.id),
+            pageSize: 20,
+            emptyMessage: 'No complaints found.',
+            emptyIcon: 'search_off',
+        });
+
+        // Keep the form submit for server-side filtering
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             apply();
         });
-
-        document.getElementById('f-sort')?.addEventListener('change', () => {
-            const q = document.getElementById('f-q')?.value.trim().toLowerCase() || '';
-            render(q ? all.filter((c) => (c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q)) : all);
-        });
-
-        apply();
     },
 };
-

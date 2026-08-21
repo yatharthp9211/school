@@ -1,11 +1,7 @@
 // views/admin_dashboard.js
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast } from '../js/components.js?v=16';
-
-function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast, esc, Unauthorized } from '../js/components.js?v=17';
 
 // OWASP CSV-injection guard: a cell starting with =, +, -, @, tab, or CR can
 // execute as a formula in Excel/Sheets. Neutralize it with a leading quote.
@@ -28,7 +24,7 @@ export const AdminDashboardView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user || user.role !== 'admin') {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
 
         const [all, flagged, falseEntries] = await Promise.all([

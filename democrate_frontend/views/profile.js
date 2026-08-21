@@ -1,11 +1,8 @@
 // views/profile.js — account overview (own data only, via /auth/me).
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, Avatar } from '../js/components.js?v=16';
-
-function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, Avatar, esc, Unauthorized } from '../js/components.js?v=17';
+import { router } from '../js/router.js?v=17';
 
 const ROLE_LABELS = { student: 'Student', teacher: 'Teacher', admin: 'Administrator' };
 
@@ -13,7 +10,7 @@ export const ProfileView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user) {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
 
         const me = await api.me().catch(() => null);
@@ -143,7 +140,7 @@ export const ProfileView = {
                 const base64Str = e.target.result;
                 try {
                     await api.updateProfile({ image: base64Str });
-                    window.location.reload(); // Reload to show the new avatar
+                    router.refresh(); // Re-render in place to show the new avatar
                 } catch (err) {
                     errorEl.textContent = err.message || 'Failed to update profile picture.';
                     uploadBtn.disabled = false;
@@ -164,7 +161,7 @@ export const ProfileView = {
             removeBtn.textContent = 'Removing...';
             try {
                 await api.updateProfile({ image: "" });
-                window.location.reload();
+                router.refresh();
             } catch (err) {
                 errorEl.textContent = err.message || 'Failed to remove picture.';
                 removeBtn.disabled = false;

@@ -1,8 +1,8 @@
 // views/complaint_form.js
-import { CONFIG } from '../js/config.js?v=16';
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, showToast, esc } from '../js/components.js?v=16';
+import { CONFIG } from '../js/config.js?v=17';
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, showToast, esc, Unauthorized } from '../js/components.js?v=17';
 
 const DRAFT_KEY = 'democrate_complaint_draft';
 const MIN_LEN = 20;
@@ -12,7 +12,7 @@ export const ComplaintFormView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user || user.role !== 'student') {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
 
         let teachers = [];

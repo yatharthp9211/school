@@ -1,18 +1,14 @@
 // views/ratings.js — anonymous teacher feedback (students only).
-import { CONFIG } from '../js/config.js?v=16';
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { Navbar, Avatar, Empty, Footer, showToast } from '../js/components.js?v=16';
-
-function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { CONFIG } from '../js/config.js?v=17';
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { Navbar, Avatar, Empty, Footer, showToast, esc, Unauthorized } from '../js/components.js?v=17';
 
 export const RatingsView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user || user.role !== 'student') {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
 
         let teachers = [];

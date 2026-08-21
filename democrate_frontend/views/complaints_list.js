@@ -2,21 +2,14 @@
 import { CONFIG } from '../js/config.js?v=17';
 import { api } from '../js/api.js?v=17';
 import { Auth } from '../js/auth.js?v=17';
-import { Navbar, ComplaintCard, Empty } from '../js/components.js?v=17';
-
-function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { Navbar, ComplaintCard, Empty, esc, Unauthorized, paginateRows } from '../js/components.js?v=17';
 
 export const ComplaintsListView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user) {
-            return '<main id="app-main"><div class="empty" style="margin-top:8rem">Unauthorized.</div></main>';
+            return Unauthorized();
         }
-
-        const feed = await api.getComplaints(); // backend is role-aware
-        const publicOnly = feed.filter((c) => !c.is_private);
 
         const categoryOptions = `<option value="">All categories</option>`
             + CONFIG.categories.map((c) => `<option value="${esc(c)}">${c}</option>`).join('');
@@ -67,18 +60,18 @@ export const ComplaintsListView = {
 
         let all = [];
 
-        const render = () => {
+        const filterAndSort = (rows) => {
             const q = (qInput?.value || '').trim().toLowerCase();
             const cat = catSel?.value || '';
             const sort = sortSel?.value || 'date-desc';
 
-            const rows = all.filter((c) => {
+            const filtered = rows.filter((c) => {
                 if (cat && (c.category || '') !== cat) return false;
                 if (q && !((c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q))) return false;
                 return true;
             });
 
-            rows.sort((a, b) => {
+            filtered.sort((a, b) => {
                 switch (sort) {
                     case 'date-asc':
                         return new Date(a.created_at || 0) - new Date(b.created_at || 0);
@@ -97,28 +90,47 @@ export const ComplaintsListView = {
                 }
             });
 
+            return filtered;
+        };
+
+        const render = (rows) => {
             if (!rows.length) {
                 list.innerHTML = Empty('No public complaints match.', 'inbox');
                 return;
             }
-
-            // First 20 visible; the rest hidden for the global load-more action.
-            list.innerHTML = rows
-                .map((c, i) => {
-                    const card = ComplaintCard(c, user.role, user.id);
-                    return i >= 20 ? card.replace('<article', '<article data-hidden-row') : card;
-                })
-                .join('')
-                + `<div class="flex justify-center"><button class="btn btn-soft" data-action="load-more" data-target="feed-list">Load more</button></div>`;
+            list.innerHTML = rows.map((c) => ComplaintCard(c, user.role, user.id)).join('');
         };
 
-        qInput?.addEventListener('input', render);
-        catSel?.addEventListener('change', render);
-        sortSel?.addEventListener('change', render);
+        // Initial load with pagination
+        paginateRows({
+            listEl: list,
+            getRows: async () => {
+                const feed = await api.getComplaints();
+                return feed.filter((c) => !c.is_private);
+            },
+            renderRow: (c) => ComplaintCard(c, user.role, user.id),
+            pageSize: 20,
+            emptyMessage: 'No public complaints yet.',
+            emptyIcon: 'inbox',
+        });
 
+        // Client-side filter/sort re-render
+        const reRender = () => render(filterAndSort(all));
+
+        // Listen for filter/sort changes
+        qInput?.addEventListener('input', () => {
+            clearTimeout(window._complaintsFilterTimeout);
+            window._complaintsFilterTimeout = setTimeout(reRender, 150);
+        });
+        catSel?.addEventListener('change', reRender);
+        sortSel?.addEventListener('change', reRender);
+
+        // Initial fetch for client-side filtering
         api.getComplaints()
-            .then((feed) => { all = feed.filter((c) => !c.is_private); render(); })
+            .then((feed) => {
+                all = feed.filter((c) => !c.is_private);
+                reRender();
+            })
             .catch(() => { list.innerHTML = Empty('Could not load complaints.', 'error'); });
     },
 };
-

@@ -198,6 +198,7 @@ def system_stats(
         "votes": db.query(models.Vote).count(),
         "ratings": db.query(models.TeacherRating).count(),
         "audit_logs": db.query(models.AuditLog).count(),
+        "false_reports": db.query(models.Complaint).filter(models.Complaint.is_false.is_(True)).count(),
     }
 
     # Complaint counts by status

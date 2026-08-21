@@ -11,7 +11,7 @@ from models import Role, ComplaintStatus, VoteType
 class Token(BaseModel):
     access_token: str
     token_type: str
-    user: dict
+    user: "LoginUser"
 
 
 class _PasswordMixin:
@@ -47,6 +47,16 @@ class RegisterTeacher(BaseModel, _PasswordMixin):
 class UserLogin(BaseModel):
     username: str
     password: str
+    role: Role
+
+
+class LoginUser(BaseModel):
+    """Minimal user shape returned in the login response. Excludes sensitive
+    fields (details/PII, ban state) — those live on UserResponse, returned only
+    by /auth/me and /auth/profile which the client re-fetches after login."""
+
+    id: str
+    name: str
     role: Role
 
 

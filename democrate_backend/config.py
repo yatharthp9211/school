@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     FALSE_SCORE_THRESHOLD: int = int(os.getenv("DEMOCRATE_FALSE_THRESHOLD", "-50"))
     FALSE_BAN_COUNT: int = int(os.getenv("DEMOCRATE_FALSE_BAN_COUNT", "5"))
 
+    # Teacher votes count ×10 vs student ×1 (one source of truth).
+    TEACHER_VOTE_WEIGHT: int = int(os.getenv("DEMOCRATE_TEACHER_VOTE_WEIGHT", "10"))
+
     # Rate limiting (in-memory; adequate for the single-process pilot.
     # Production: rely on Cloudflare edge limits / shared limiter when traffic demands it).
     AUTH_RATE_LIMIT: int = int(os.getenv("DEMOCRATE_AUTH_RATE_LIMIT", "200"))

@@ -1,13 +1,13 @@
-import { api } from '../js/api.js?v=16';
-import { Auth } from '../js/auth.js?v=16';
-import { ThemeToggle, esc, showToast } from '../js/components.js?v=16';
-import { router } from '../js/router.js?v=16';
+import { api } from '../js/api.js?v=17';
+import { Auth } from '../js/auth.js?v=17';
+import { ThemeToggle, esc, showToast, Unauthorized } from '../js/components.js?v=17';
+import { router } from '../js/router.js?v=17';
 
 export const DeveloperDashboardView = {
     render: async () => {
         const user = Auth.getCurrentUser();
         if (!user || user.role !== 'developer') {
-            return '<div class="empty" style="margin-top:8rem">Unauthorized.</div>';
+            return Unauthorized();
         }
 
         // Fetch basic stats (fallback if endpoints missing)

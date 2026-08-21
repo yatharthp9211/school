@@ -8,7 +8,7 @@ import security
 import audit
 from database import get_db
 from config import settings
-from dependencies import get_current_user, client_ip, get_current_active_developer
+from dependencies import get_current_user, client_ip, get_developer_temp
 
 router = APIRouter()
 
@@ -19,10 +19,11 @@ router = APIRouter()
 _DUMMY_HASH = security.get_password_hash("dummy")
 
 
-def _public_user(user: models.User) -> dict:
-    """Minimal user object for the client. Never includes internal details/PII
-    (details can hold a base64 photo and class info)."""
-    return {"id": user.id, "name": user.name, "role": user.role.value}
+def _public_user(user: models.User) -> schemas.LoginUser:
+    """Minimal user object for the login response. Never includes internal
+    details/PII (details can hold a base64 photo and class info) — those are
+    returned separately by /auth/me and /auth/profile."""
+    return schemas.LoginUser(id=user.id, name=user.name, role=user.role)
 
 
 @router.post("/register", response_model=schemas.UserResponse)
@@ -66,7 +67,7 @@ def check_id(user_id: str, db: Session = Depends(get_db)):
     return {"available": user is None}
 
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.Token)
 def login(user_in: schemas.UserLogin, request: Request, db: Session = Depends(get_db)):
     user = crud.get_user(db, user_id=user_in.username)
     ip = client_ip(request)
@@ -203,12 +204,12 @@ def developer_login(user_in: schemas.UserLogin, request: Request, db: Session = 
     }
 
 
-@router.post("/developer/unlock")
+@router.post("/developer/unlock", response_model=schemas.Token)
 def developer_unlock(
     request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_developer),
+    current_user: models.User = Depends(get_developer_temp),
 ):
     """Developer second factor: upload unlock file."""
     # Read the uploaded file with size limit (1 MB max)
@@ -234,10 +235,9 @@ def developer_unlock(
             detail="Failed to read unlock file",
         )
 
-    print(f"Expected: {settings.DEVELOPER_SECRET_FILE_CONTENT}")
-    print(f"Received: {content}")
-    print(f"Match: {content == settings.DEVELOPER_SECRET_FILE_CONTENT}")
-
+    # NOTE: the expected secret and the uploaded content are intentionally
+    # NEVER logged — printing them to stdout would leak the 2FA credential on a
+    # shared host. The outcome is captured in the audit log below instead.
     if not settings.DEVELOPER_SECRET_FILE_CONTENT or content != settings.DEVELOPER_SECRET_FILE_CONTENT:
         audit.log_action(db, current_user.id, audit.LOGIN_FAILURE, details="dev_unlock_failed", ip=client_ip(request))
         raise HTTPException(

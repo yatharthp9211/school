@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import secrets
 
@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 import models
 import schemas
+from config import settings
 from security import get_password_hash
 
 
@@ -215,7 +216,7 @@ def create_vote(
         raise DuplicateVoteError()
 
     # Update the aggregate counters on the Complaint row.
-    if weight == 10:  # Teacher vote (×10)
+    if weight == settings.TEACHER_VOTE_WEIGHT:  # Teacher vote (×10)
         if vote_type == models.VoteType.UPVOTE:
             complaint.teacher_up = (complaint.teacher_up or 0) + 1
         else:
@@ -236,6 +237,14 @@ def create_vote(
 # ---------------------------------------------------------------------------
 
 
+def _apply_rating(existing: models.TeacherRating, rating: schemas.RatingCreate) -> None:
+    """Write the submitted rating fields onto a row and stamp it. Shared by the
+    pre-check and the post-IntegrityError retry so the two update paths can't drift."""
+    existing.rating = rating.rating
+    existing.tags = rating.tags
+    existing.timestamp = datetime.now(timezone.utc)
+
+
 def create_or_update_rating(
     db: Session,
     rating: schemas.RatingCreate,
@@ -251,9 +260,7 @@ def create_or_update_rating(
         .first()
     )
     if existing:
-        existing.rating = rating.rating
-        existing.tags = rating.tags
-        existing.timestamp = datetime.utcnow()
+        _apply_rating(existing, rating)
         db.commit()
         db.refresh(existing)
         return existing
@@ -278,8 +285,7 @@ def create_or_update_rating(
             .first()
         )
         if existing:
-            existing.rating = rating.rating
-            existing.tags = rating.tags
+            _apply_rating(existing, rating)
             db.commit()
             db.refresh(existing)
             return existing
