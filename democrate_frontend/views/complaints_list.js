@@ -2,7 +2,7 @@
 import { CONFIG } from '../js/config.js?v=18';
 import { api } from '../js/api.js?v=18';
 import { Auth } from '../js/auth.js?v=18';
-import { Navbar, ComplaintCard, Empty, esc, Unauthorized, paginateRows } from '../js/components.js?v=18';
+import { Navbar, ComplaintCard, Empty, esc, Unauthorized, filterAndSortComplaints } from '../js/components.js?v=18';
 
 export const ComplaintsListView = {
     render: async () => {
@@ -11,41 +11,52 @@ export const ComplaintsListView = {
             return Unauthorized();
         }
 
-        const categoryOptions = `<option value="">All categories</option>`
-            + CONFIG.categories.map((c) => `<option value="${esc(c)}">${c}</option>`).join('');
+        const categoryOptions = CONFIG.categories
+            .map((c) => `<option value="${esc(c)}">${esc(c)}</option>`)
+            .join('');
 
         return `
             ${Navbar(user)}
             <main id="app-main" style="padding:2rem 0 3rem">
-                <header class="animate-fade-in">
-                    <span class="eyebrow">Community</span>
-                    <h1 class="display" style="font-size:1.9rem;margin-top:.2rem">Public complaints</h1>
-                    <p class="muted small">Verified reports the community weighs in on. Your vote counts — students ×1, teachers ×10.</p>
+                <header class="flex flex-wrap justify-between items-end gap-3 animate-fade-in">
+                    <div>
+                        <span class="eyebrow">Public feed</span>
+                        <h1 class="display" style="font-size:1.9rem;margin-top:.2rem">Community complaints</h1>
+                        <p class="muted small">All verified complaints, ordered by community weight.</p>
+                    </div>
                 </header>
 
-                <div class="card card-padded flex flex-wrap items-end gap-3" style="margin-top:1.2rem">
-                    <div class="field" style="min-width:160px">
-                        <label class="label" for="fb-category">Category</label>
-                        <select class="select" id="fb-category">${categoryOptions}</select>
+                <div class="card card-padded flex flex-wrap gap-3 items-center" style="margin-top:1.5rem">
+                    <div class="form-group" style="flex:1;min-width:200px;margin:0">
+                        <input type="search" id="fb-q" placeholder="Search complaints or IDs…">
                     </div>
-                    <div class="field" style="min-width:170px">
-                        <label class="label" for="fb-sort">Sort by</label>
-                        <select class="select" id="fb-sort">
+                    <div class="form-group" style="min-width:160px;margin:0">
+                        <select id="fb-category">
+                            <option value="">All categories</option>
+                            ${categoryOptions}
+                        </select>
+                    </div>
+                    <div class="form-group" style="min-width:180px;margin:0">
+                        <select id="fb-sort">
                             <option value="date-desc">Newest first</option>
                             <option value="date-asc">Oldest first</option>
                             <option value="score-desc">Highest score</option>
                             <option value="score-asc">Lowest score</option>
-                            <option value="text-asc">Complaint (A to Z)</option>
-                            <option value="text-desc">Complaint (Z to A)</option>
+                            <option value="text-asc">Complaint (A-Z)</option>
+                            <option value="text-desc">Complaint (Z-A)</option>
                         </select>
-                    </div>
-                    <div class="field" style="flex:1;min-width:200px">
-                        <label class="label" for="fb-q">Search</label>
-                        <input class="input" id="fb-q" type="search" placeholder="Search reports…">
                     </div>
                 </div>
 
-                <div id="feed-list" class="flex flex-col gap-4" style="margin-top:1.5rem" aria-live="polite"></div>
+                <section style="margin-top:1.5rem">
+                    <div id="feed-list" class="flex flex-col gap-4">
+                        <div class="card card-padded animate-pulse" aria-busy="true">
+                            <div class="skeleton line w-40 mb-3"></div>
+                            <div class="skeleton line w-80 mb-2"></div>
+                            <div class="skeleton line w-60"></div>
+                        </div>
+                    </div>
+                </section>
             </main>
         `;
     },
@@ -60,39 +71,6 @@ export const ComplaintsListView = {
 
         let all = [];
 
-        const filterAndSort = (rows) => {
-            const q = (qInput?.value || '').trim().toLowerCase();
-            const cat = catSel?.value || '';
-            const sort = sortSel?.value || 'date-desc';
-
-            const filtered = rows.filter((c) => {
-                if (cat && (c.category || '') !== cat) return false;
-                if (q && !((c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q))) return false;
-                return true;
-            });
-
-            filtered.sort((a, b) => {
-                switch (sort) {
-                    case 'date-asc':
-                        return new Date(a.created_at || 0) - new Date(b.created_at || 0);
-                    case 'date-desc':
-                        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-                    case 'score-desc':
-                        return (b.score ?? 0) - (a.score ?? 0);
-                    case 'score-asc':
-                        return (a.score ?? 0) - (b.score ?? 0);
-                    case 'text-asc':
-                        return (a.text || '').localeCompare(b.text || '', undefined, { sensitivity: 'base' });
-                    case 'text-desc':
-                        return (b.text || '').localeCompare(a.text || '', undefined, { sensitivity: 'base' });
-                    default:
-                        return 0;
-                }
-            });
-
-            return filtered;
-        };
-
         const render = (rows) => {
             if (!rows.length) {
                 list.innerHTML = Empty('No public complaints match.', 'inbox');
@@ -101,23 +79,15 @@ export const ComplaintsListView = {
             list.innerHTML = rows.map((c) => ComplaintCard(c, user.role, user.id)).join('');
         };
 
-        // Initial load with pagination
-        paginateRows({
-            listEl: list,
-            getRows: async () => {
-                const feed = await api.getComplaints();
-                return feed.filter((c) => !c.is_private);
-            },
-            renderRow: (c) => ComplaintCard(c, user.role, user.id),
-            pageSize: 20,
-            emptyMessage: 'No public complaints yet.',
-            emptyIcon: 'inbox',
-        });
+        const reRender = () => {
+            const rows = filterAndSortComplaints(all, {
+                query: qInput?.value || '',
+                category: catSel?.value || '',
+                sort: sortSel?.value || 'date-desc',
+            });
+            render(rows);
+        };
 
-        // Client-side filter/sort re-render
-        const reRender = () => render(filterAndSort(all));
-
-        // Listen for filter/sort changes
         qInput?.addEventListener('input', () => {
             clearTimeout(window._complaintsFilterTimeout);
             window._complaintsFilterTimeout = setTimeout(reRender, 150);
@@ -125,7 +95,6 @@ export const ComplaintsListView = {
         catSel?.addEventListener('change', reRender);
         sortSel?.addEventListener('change', reRender);
 
-        // Initial fetch for client-side filtering
         api.getComplaints()
             .then((feed) => {
                 all = feed.filter((c) => !c.is_private);

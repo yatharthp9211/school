@@ -114,6 +114,36 @@ export async function paginateRows({ listEl, getRows, renderRow, pageSize = 20, 
     });
 }
 
+export function filterAndSortComplaints(rows, { query = '', category = '', sort = 'date-desc' } = {}) {
+    const q = (query || '').trim().toLowerCase();
+    const cat = category || '';
+
+    const filtered = rows.filter((c) => {
+        if (cat && (c.category || '') !== cat) return false;
+        if (q && !((c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q))) return false;
+        return true;
+    });
+
+    return filtered.sort((a, b) => {
+        switch (sort) {
+            case 'date-asc':
+                return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+            case 'date-desc':
+                return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+            case 'score-desc':
+                return (b.score ?? 0) - (a.score ?? 0);
+            case 'score-asc':
+                return (a.score ?? 0) - (b.score ?? 0);
+            case 'text-asc':
+                return (a.text || '').localeCompare(b.text || '', undefined, { sensitivity: 'base' });
+            case 'text-desc':
+                return (b.text || '').localeCompare(a.text || '', undefined, { sensitivity: 'base' });
+            default:
+                return 0;
+        }
+    });
+}
+
 export function Stat(value, label) {
     return `
         <div class="stat">

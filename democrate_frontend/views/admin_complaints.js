@@ -2,7 +2,7 @@
 import { CONFIG } from '../js/config.js?v=18';
 import { api } from '../js/api.js?v=18';
 import { Auth } from '../js/auth.js?v=18';
-import { Navbar, ComplaintCard, Empty, esc, Unauthorized, paginateRows } from '../js/components.js?v=18';
+import { Navbar, ComplaintCard, Empty, esc, Unauthorized, filterAndSortComplaints } from '../js/components.js?v=18';
 
 const STATUSES = ['', 'pending', 'published', 'voting', 'flagged', 'moderated', 'resolved', 'archived'];
 
@@ -69,38 +69,6 @@ export const AdminComplaintsView = {
 
         let all = [];
 
-        const sortAndFilter = (rows) => {
-            const sort = document.getElementById('f-sort')?.value || 'date-desc';
-            const q = document.getElementById('f-q')?.value.trim().toLowerCase() || '';
-
-            const sorted = [...rows];
-            sorted.sort((a, b) => {
-                switch (sort) {
-                    case 'date-asc':
-                        return new Date(a.created_at || 0) - new Date(b.created_at || 0);
-                    case 'date-desc':
-                        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-                    case 'score-desc':
-                        return (b.score ?? 0) - (a.score ?? 0);
-                    case 'score-asc':
-                        return (a.score ?? 0) - (b.score ?? 0);
-                    case 'text-asc':
-                        return (a.text || '').localeCompare(b.text || '', undefined, { sensitivity: 'base' });
-                    case 'text-desc':
-                        return (b.text || '').localeCompare(a.text || '', undefined, { sensitivity: 'base' });
-                    default:
-                        return 0;
-                }
-            });
-
-            if (q) {
-                return sorted.filter((c) =>
-                    (c.text || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q)
-                );
-            }
-            return sorted;
-        };
-
         const render = (rows) => {
             if (!rows.length) {
                 list.innerHTML = Empty('No complaints match these filters.', 'search_off');
@@ -109,58 +77,47 @@ export const AdminComplaintsView = {
             list.innerHTML = rows.map((c) => ComplaintCard(c, 'admin', user.id)).join('');
         };
 
+        const reRender = () => {
+            const rows = filterAndSortComplaints(all, {
+                query: document.getElementById('f-q')?.value || '',
+                sort: document.getElementById('f-sort')?.value || 'date-desc',
+            });
+            render(rows);
+        };
+
         const apply = async () => {
-            form.querySelector('button[type="submit"]').disabled = true;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
             try {
-                const status = document.getElementById('f-status').value;
-                const category = document.getElementById('f-category').value;
+                const status = document.getElementById('f-status')?.value;
+                const category = document.getElementById('f-category')?.value;
 
                 if (status || category) {
                     all = await api.adminGetComplaints({ limit: 200, status, category });
                 } else {
                     all = await api.adminGetComplaints({ limit: 200 });
                 }
-                render(sortAndFilter(all));
+                reRender();
             } catch (err) {
                 list.innerHTML = Empty(err.message || 'Could not load complaints.', 'error');
             } finally {
-                form.querySelector('button[type="submit"]').disabled = false;
+                if (submitBtn) submitBtn.disabled = false;
             }
         };
 
-        // Re-render on sort change (no new fetch needed)
-        document.getElementById('f-sort')?.addEventListener('change', () => {
-            render(sortAndFilter(all));
-        });
+        document.getElementById('f-sort')?.addEventListener('change', reRender);
 
-        // Search input - debounced client-side filter
         let searchTimeout;
         document.getElementById('f-q')?.addEventListener('input', () => {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => render(sortAndFilter(all)), 150);
+            searchTimeout = setTimeout(reRender, 150);
         });
 
-        // Initial load with pagination
-        paginateRows({
-            listEl: list,
-            getRows: async () => {
-                const status = document.getElementById('f-status').value;
-                const category = document.getElementById('f-category').value;
-                if (status || category) {
-                    return api.adminGetComplaints({ limit: 200, status, category });
-                }
-                return api.adminGetComplaints({ limit: 200 });
-            },
-            renderRow: (c) => ComplaintCard(c, 'admin', user.id),
-            pageSize: 20,
-            emptyMessage: 'No complaints found.',
-            emptyIcon: 'search_off',
-        });
-
-        // Keep the form submit for server-side filtering
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             apply();
         });
+
+        apply();
     },
 };

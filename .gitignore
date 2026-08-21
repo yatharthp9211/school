@@ -20,3 +20,8 @@ developer_key.txt
 # OS Files
 .DS_Store
 Thumbs.db
+
+# AI Agents
+.agents/
+.claude/
+skills-lock.json
