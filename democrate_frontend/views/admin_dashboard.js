@@ -1,7 +1,7 @@
 // views/admin_dashboard.js
-import { api } from '../js/api.js?v=17';
-import { Auth } from '../js/auth.js?v=17';
-import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast, esc, Unauthorized } from '../js/components.js?v=17';
+import { api } from '../js/api.js?v=18';
+import { Auth } from '../js/auth.js?v=18';
+import { Navbar, ComplaintCard, FlaggedCard, Empty, Stat, showToast, esc, Unauthorized } from '../js/components.js?v=18';
 
 // OWASP CSV-injection guard: a cell starting with =, +, -, @, tab, or CR can
 // execute as a formula in Excel/Sheets. Neutralize it with a leading quote.

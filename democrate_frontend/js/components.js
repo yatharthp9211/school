@@ -1,6 +1,6 @@
 // js/components.js — reusable UI components (module exports only, no window globals)
-import { CONFIG } from './config.js';
-import { state } from './state.js';
+import { CONFIG } from './config.js?v=18';
+import { state } from './state.js?v=18';
 
 // ---------------------------------------------------------------------------
 // Helpers

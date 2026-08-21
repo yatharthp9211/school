@@ -1,9 +1,9 @@
 // js/app.js — bootstrap, routes (lazy views), global action dispatcher, drawer
-import { router } from './router.js?v=17';
-import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=17';
-import { Auth } from './auth.js?v=17';
-import { api } from './api.js?v=17';
-import { showToast } from './components.js?v=17';
+import { router } from './router.js?v=18';
+import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=18';
+import { Auth } from './auth.js?v=18';
+import { api } from './api.js?v=18';
+import { showToast } from './components.js?v=18';
 
 // ---------------------------------------------------------------------------
 // Routes — views are lazy-loaded via dynamic import (code-split per route)
@@ -11,7 +11,7 @@ import { showToast } from './components.js?v=17';
 // ---------------------------------------------------------------------------
 // ?v=N busts the browser's module cache so view updates always take effect.
 // Bump the suffix whenever view files change.
-const V = 17;
+const V = 18;
 const load = (path, exportName, ...args) => () =>
     import(`../views/${path}.js?v=${V}`).then((m) => m[exportName](...args));
 
@@ -98,11 +98,10 @@ document.addEventListener('click', async (e) => {
             break;
 
         case 'logout':
-            stateLogout();
+            closeDrawer();
+            Auth.logout();
             showToast('Signed out.');
             router.navigate('/');
-            // Force route handling in case hashchange doesn't fire reliably
-            setTimeout(() => router.handleRoute(), 0);
             break;
 
         case 'vote': {

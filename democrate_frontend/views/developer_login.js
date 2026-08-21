@@ -1,9 +1,9 @@
 // views/developer_login.js — developer authentication with file unlock
 
-import { api } from '../js/api.js?v=17';
-import { Auth } from '../js/auth.js?v=17';
-import { router } from '../js/router.js?v=17';
-import { showToast, ThemeToggle, Loading } from '../js/components.js?v=17';
+import { api } from '../js/api.js?v=18';
+import { Auth } from '../js/auth.js?v=18';
+import { router } from '../js/router.js?v=18';
+import { showToast, ThemeToggle, Loading } from '../js/components.js?v=18';
 
 
 

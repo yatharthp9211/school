@@ -1,8 +1,8 @@
 // views/complaints_list.js — the public, verified feed (all roles can view & vote).
-import { CONFIG } from '../js/config.js?v=17';
-import { api } from '../js/api.js?v=17';
-import { Auth } from '../js/auth.js?v=17';
-import { Navbar, ComplaintCard, Empty, esc, Unauthorized, paginateRows } from '../js/components.js?v=17';
+import { CONFIG } from '../js/config.js?v=18';
+import { api } from '../js/api.js?v=18';
+import { Auth } from '../js/auth.js?v=18';
+import { Navbar, ComplaintCard, Empty, esc, Unauthorized, paginateRows } from '../js/components.js?v=18';
 
 export const ComplaintsListView = {
     render: async () => {

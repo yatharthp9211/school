@@ -1,5 +1,5 @@
-﻿// js/auth.js — thin adapter over the single session store in state.js
-import { state, setSession, loadSession, logout as stateLogout } from './state.js';
+// js/auth.js — thin adapter over the single session store in state.js
+import { state, setSession, loadSession, logout as stateLogout } from './state.js?v=18';
 
 // Decode the JWT payload (base64url) to read its exp without a library.
 // Returns epoch-ms or null when the token isn't a parseable 3-part JWT.

@@ -1,8 +1,8 @@
 // views/profile.js — account overview (own data only, via /auth/me).
-import { api } from '../js/api.js?v=17';
-import { Auth } from '../js/auth.js?v=17';
-import { Navbar, Avatar, esc, Unauthorized } from '../js/components.js?v=17';
-import { router } from '../js/router.js?v=17';
+import { api } from '../js/api.js?v=18';
+import { Auth } from '../js/auth.js?v=18';
+import { Navbar, Avatar, esc, Unauthorized } from '../js/components.js?v=18';
+import { router } from '../js/router.js?v=18';
 
 const ROLE_LABELS = { student: 'Student', teacher: 'Teacher', admin: 'Administrator' };
 
