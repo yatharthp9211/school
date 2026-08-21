@@ -118,55 +118,38 @@ export const ProfileView = {
 
         if (!uploadBtn) return;
 
-        uploadBtn.addEventListener('click', async () => {
+        const updateImage = async (btn, base64Str, pendingText, defaultText) => {
             errorEl.textContent = '';
-            const file = fileInput.files[0];
-            
+            btn.disabled = true;
+            btn.textContent = pendingText;
+            try {
+                await api.updateProfile({ image: base64Str });
+                router.refresh();
+            } catch (err) {
+                errorEl.textContent = err.message || 'Failed to update profile picture.';
+                btn.disabled = false;
+                btn.textContent = defaultText;
+            }
+        };
+
+        uploadBtn.addEventListener('click', () => {
+            errorEl.textContent = '';
+            const file = fileInput?.files?.[0];
             if (!file) {
                 errorEl.textContent = 'Please select an image first.';
                 return;
             }
-            
             if (file.size > 1048576) {
                 errorEl.textContent = 'File is too large. Maximum size is 1 MB.';
                 return;
             }
 
-            uploadBtn.disabled = true;
-            uploadBtn.textContent = 'Saving...';
-
             const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64Str = e.target.result;
-                try {
-                    await api.updateProfile({ image: base64Str });
-                    router.refresh(); // Re-render in place to show the new avatar
-                } catch (err) {
-                    errorEl.textContent = err.message || 'Failed to update profile picture.';
-                    uploadBtn.disabled = false;
-                    uploadBtn.textContent = 'Save Picture';
-                }
-            };
-            reader.onerror = () => {
-                errorEl.textContent = 'Error reading file.';
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = 'Save Picture';
-            };
+            reader.onload = (e) => updateImage(uploadBtn, e.target.result, 'Saving…', 'Save Picture');
+            reader.onerror = () => { errorEl.textContent = 'Error reading file.'; };
             reader.readAsDataURL(file);
         });
 
-        removeBtn.addEventListener('click', async () => {
-            errorEl.textContent = '';
-            removeBtn.disabled = true;
-            removeBtn.textContent = 'Removing...';
-            try {
-                await api.updateProfile({ image: "" });
-                router.refresh();
-            } catch (err) {
-                errorEl.textContent = err.message || 'Failed to remove picture.';
-                removeBtn.disabled = false;
-                removeBtn.textContent = 'Remove Picture';
-            }
-        });
-    }
+        removeBtn?.addEventListener('click', () => updateImage(removeBtn, '', 'Removing…', 'Remove Picture'));
+    },
 };
