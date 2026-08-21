@@ -1,0 +1,133 @@
+================================================================================
+                         DEMOCRATE PLATFORM - CHANGES HISTORY
+================================================================================
+Project: Democrate (Anonymous School Complaint & Accountability Platform)
+Institution: Sanskar Global School
+Repository: https://github.com/yatharthp9211/school.git
+Branches: master (production / stable), mk2 (staging / feature development)
+Generated: August 21, 2026
+
+--------------------------------------------------------------------------------
+1. PROJECT INITIALIZATION & FOUNDATIONAL ARCHITECTURE
+--------------------------------------------------------------------------------
+* Initial commit and repository setup (Commit: 5bdb936)
+* Backend:
+  - Built with FastAPI, SQLite, and SQLAlchemy ORM.
+  - Multi-tier role management: Student, Teacher, Administrator, Developer.
+  - Token-based JWT authentication with bcrypt/sha256 password hashing.
+  - Database schema: Users, Complaints, TeacherRatings, AuditLogs.
+* Frontend:
+  - Zero-build vanilla JavaScript single-page application (SPA) with ES Modules.
+  - Dynamic client-side hash router with role-based route protection.
+  - Modular CSS design system (tokens, components, typography, dark/light theme).
+* Core Complaint Lifecycle:
+  - Anonymous student submissions (per-complaint random ANON-XXXX IDs).
+  - Teacher verification queue (with self-verification prevention).
+  - Public voting engine with weighted scoring:
+    Score = (student_up - student_down) + 10 * (teacher_up - teacher_down).
+
+--------------------------------------------------------------------------------
+2. MOBILE & REVERSE-PROXY DEPLOYMENT ADAPTATIONS
+--------------------------------------------------------------------------------
+* Trailing Slash & Route Corrections (Commit: d125541):
+  - Fixed trailing slash mismatches in FastAPI router endpoints.
+  - Added Nginx proxy configurations for Termux Android hosting.
+* API Base URL Auto-Detection (Commit: 40e8f04):
+  - Changed hardcoded origins to dynamic relative paths (`/api/v1`) in `js/config.js`.
+  - Allowed the web app to run seamlessly on localhost, direct IP, or public domains.
+* E2E Verification Scripts (Commit: 09bd87a):
+  - Created automated end-to-end integration test suites (`_verify_e2e.py` and `_smoke_test.py`).
+
+--------------------------------------------------------------------------------
+3. MAJOR SECURITY & STABILITY SWEEP (36 BUGS PATCHED)
+--------------------------------------------------------------------------------
+* Massive automated audit and bug fix overhaul (Commit: ee0d448 & f75bf77):
+  - XSS Protection: HTML entity escaping on all user-controlled text across views.
+  - Authentication Guards:
+    - Blocked privilege escalation during registration.
+    - Role mismatch validation during login.
+    - Legacy password verification resilience against malformed hashes.
+  - State Machine Enforcement:
+    - Blocked voting on unverified/pending complaints.
+    - Blocked voting on one's own complaint.
+    - Database unique constraints to prevent duplicate-vote race conditions.
+  - Discipline & Accountability Logic:
+    - Automatic student ban upon reaching 5 false complaints.
+    - Verifier teacher penalty deduction (-50 leaderboard points) on false reports.
+    - Admin self-disable protection.
+  - Rate Limiting Engine:
+    - Custom in-memory sliding window rate limiter (`ratelimit.py`) returning 429.
+  - User Profiles & Media:
+    - Added user avatar/profile picture upload with Base64 encoding and 1MB size limit.
+
+--------------------------------------------------------------------------------
+4. DEVELOPER PORTAL & 2FA HARDENING
+--------------------------------------------------------------------------------
+* Developer Portal Integration (Commit: c547bed & 4c16bca):
+  - Created dedicated `/developer/login` and `/developer` views.
+  - Built a 2FA unlock mechanism requiring an uploaded digital/physical secret key file (`DEVELOPER_SECRET_FILE_CONTENT`).
+  - Read-only raw database query console for system diagnostics.
+  - System statistics dashboard (active users, total complaints, resolved cases).
+* Audit Log Isolation:
+  - Relocated system audit trails out of the Administrator view and secured them exclusively within the 2FA Developer Console to protect anonymity.
+* Secret Security (Commit: a8cfcdb):
+  - Removed `developer_key.txt` from Git tracking and updated `.gitignore`.
+
+--------------------------------------------------------------------------------
+5. TERMUX PRODUCTION ENVIRONMENT & UI ENHANCEMENTS
+--------------------------------------------------------------------------------
+* Production Deployment Stack:
+  - Backend: Uvicorn running on localhost port 5000 in Termux Python 3.14.
+  - Frontend: Termux Nginx server serving static assets on port 8080.
+  - Public Routing: Cloudflare Tunnel (`cloudflared`) exposing `https://yatharthpandey.dpdns.org`.
+* Database Migration:
+  - Resolved `sqlite3.OperationalError: no such column: users.image` on Termux DB.
+* Feed Sorting Feature (Commit: 906826e):
+  - Added multi-criteria sort dropdowns to `complaints_list.js` and `admin_complaints.js`:
+    - Newest first (`date-desc`)
+    - Oldest first (`date-asc`)
+    - Highest score (`score-desc`)
+    - Lowest score (`score-asc`)
+    - Complaint A-Z (`text-asc`)
+    - Complaint Z-A (`text-desc`)
+
+--------------------------------------------------------------------------------
+6. COMPREHENSIVE REFACTORING & CODE HARMONIZATION (AUGUST 21, 2026)
+--------------------------------------------------------------------------------
+* Clean Code & Architecture Hardening (Commit: 2e29380):
+  - Backend Refactoring:
+    - BUG 1.1: Added `false_reports` count to `/developer/stats` endpoint.
+    - BUG 1.2: Added `temp: True` token check in `get_current_user` to block unverified 2FA developer tokens from accessing regular endpoints.
+    - BUG 1.3: Split `LoginUser` and `UserResponse` schemas; login returns strictly `{ id, name, role }` to prevent credential/detail leaks.
+    - BUG 1.4: Removed secret prints from stdout in developer 2FA unlock route.
+    - Refactored `datetime.utcnow()` deprecation to `datetime.now(timezone.utc)` and added `_utcnow()` helper in `models.py`.
+    - Collapsed redundant complaint score properties into a single unified implementation.
+  - Frontend DRY Refactoring:
+    - Centralized `esc()` HTML sanitizer in `js/components.js`, removing 13 local copies.
+    - Centralized `Loading()`, `Unauthorized()`, and `paginateRows()` helpers in `components.js`.
+* Ratings Datetime Fix (Commit: 332e83c):
+  - Fixed `NameError: name 'datetime' is not defined` in `democrate_backend/crud.py` for teacher rating timestamps.
+* ES Module Unification & Instant Logout Fix (Commit: 57578d2):
+  - Root Cause: Mismatched import query strings (`?v=17` vs unversioned) caused dual `state.js` singleton instances in browser memory, breaking immediate logout redirection.
+  - Fix: Unified all internal and view module imports to `?v=18`.
+  - Updated logout pipeline to close mobile drawer, clear auth state, and instantly redirect to landing page (`#/`) with zero page reload required.
+
+--------------------------------------------------------------------------------
+7. TEST VERIFICATION SUMMARY
+--------------------------------------------------------------------------------
+* Smoke Test Suite (`_smoke_test.py`):
+  - 11 / 11 tests PASS (Server boot, registrations, auth token validation, submission, score serialization, protected routes).
+* Full E2E Test Suite (`_verify_e2e.py`):
+  - 57 / 57 tests PASS (0 failures) across:
+    - Section 0: Multi-role account setup
+    - Section 1: Auth guards and role tampering prevention
+    - Section 2: Complaint creation and privacy filters
+    - Section 3: Voting state machine and concurrency constraints
+    - Section 4: Moderation flow, false complaint penalties, and auto-bans
+    - Section 5: Teacher ratings and dynamic leaderboard calculations
+    - Section 6: User account suspension/re-enable lifecycle
+    - Section 7: Sliding window rate limiting
+    - Section 8: Refactoring assertions (T1–T8)
+* Live Browser Validation:
+  - Live site `https://yatharthpandey.dpdns.org` audited via browser subagent: verified landing, responsive drawer, student/teacher logins, dashboard views, and immediate logout.
+================================================================================
