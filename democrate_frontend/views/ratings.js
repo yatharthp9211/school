@@ -19,7 +19,7 @@ export const RatingsView = {
                 <div class="card card-padded animate-slide-up rating-row" data-teacher-id="${t.id}">
                     <div class="flex flex-wrap items-center gap-4">
                         ${Avatar(t.name, { photo: t.photo })}
-                        <div style="min-width:0;flex:1">
+                        <div style="min-width:120px;flex:1">
                             <h3 style="font-family:var(--font-display);font-weight:600;font-size:1.05rem">${esc(t.name)}</h3>
                             <p class="small muted truncate">${esc(t.subject)}</p>
                         </div>
