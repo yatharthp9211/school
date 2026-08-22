@@ -31,8 +31,8 @@ export const router = {
     },
 
     navigate(path) {
-        if (window.location.hash.slice(1) !== path) window.location.hash = path;
-        else this.handleRoute();
+        window.location.hash = path;
+        this.handleRoute();
     },
 
     // Re-run the current view (after data-changing actions) without a skeleton flash.

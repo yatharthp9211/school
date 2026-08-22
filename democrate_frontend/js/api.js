@@ -22,9 +22,8 @@ async function fetchApi(url, options = {}) {
 
     }
 
-    const token = Auth.getToken();
-
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    // Remove manual Authorization header and use credentials to send HttpOnly cookies
+    options.credentials = 'include';
 
 
 

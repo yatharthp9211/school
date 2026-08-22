@@ -68,52 +68,6 @@ export function Loading(message = 'Loading…') {
     return `<div class="empty" style="margin-top:8rem"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite">refresh</span><p>${message}</p></div>`;
 }
 
-// ---------------------------------------------------------------------------
-// List pagination helper
-// ---------------------------------------------------------------------------
-
-/**
- * Handles the "load more" pattern for list views.
- * @param {Object} opts
- *   - listEl: DOM element to render into
- *   - getRows: async function returning all rows
- *   - renderRow: function(row, index) => HTML string
- *   - pageSize: number of items per page (default 20)
- *   - emptyMessage: string for Empty() when no rows
- *   - emptyIcon: icon for Empty()
- */
-export async function paginateRows({ listEl, getRows, renderRow, pageSize = 20, emptyMessage = 'No items.', emptyIcon = 'inbox' }) {
-    if (!listEl) return;
-
-    let allRows = [];
-    let rendered = 0;
-
-    const render = () => {
-        const visible = allRows.slice(0, rendered + pageSize);
-        if (!visible.length) {
-            listEl.innerHTML = Empty(emptyMessage, emptyIcon);
-            return;
-        }
-        listEl.innerHTML = visible.map((row, i) => renderRow(row, i)).join('')
-            + (visible.length < allRows.length
-                ? `<div class="flex justify-center" style="margin-top:1rem"><button class="btn btn-soft" data-action="load-more">Load more</button></div>`
-                : '');
-    };
-
-    // Initial load
-    allRows = await getRows();
-    render();
-
-    // Load more handler
-    listEl.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-action="load-more"]');
-        if (btn) {
-            rendered += pageSize;
-            render();
-        }
-    });
-}
-
 export function filterAndSortComplaints(rows, { query = '', category = '', sort = 'date-desc' } = {}) {
     const q = (query || '').trim().toLowerCase();
     const cat = category || '';
@@ -335,7 +289,7 @@ export function ComplaintCard(complaint, role, currentUserId) {
         // Voters (student / general public). No vote buttons on your own
         // complaint (the backend rejects self-votes) or once voting is closed —
         // they'd just 400 on every click.
-        const isOwn = !!currentUserId && complaint.author_id === currentUserId;
+        const isOwn = !!complaint.is_author;
         const votable = ['published', 'voting'].includes(status);
         actions = (isOwn || !votable) ? '' : `
             <div class="flex items-center gap-3 mt-4 pt-4" style="border-top:1px solid var(--color-hairline)">

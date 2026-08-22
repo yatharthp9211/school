@@ -31,7 +31,7 @@ class RegisterStudent(BaseModel, _PasswordMixin):
     id: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
     name: str = Field(min_length=1, max_length=80)
     password: str
-    details: Optional[str] = None  # e.g. "Class 9A - A (Roll: 52)"
+    details: Optional[str] = Field(default=None, max_length=500)  # e.g. "Class 9A - A (Roll: 52)"
 
 
 class RegisterTeacher(BaseModel, _PasswordMixin):
@@ -150,6 +150,7 @@ class ComplaintResponse(BaseModel):
     teacher_down: int = 0
     is_false: bool = False
     score: int = 0
+    is_author: bool = False
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 

@@ -23,6 +23,15 @@ def _page(skip: int, limit: int) -> tuple[int, int]:
     return max(skip, 0), min(max(limit, 1), MAX_PAGE)
 
 
+def _serialize_complaint(complaint: models.Complaint, user_id: str) -> schemas.ComplaintResponse:
+    resp = schemas.ComplaintResponse.model_validate(complaint)
+    resp.is_author = (complaint.author_id == user_id)
+    return resp
+
+def _serialize_complaints(complaints: List[models.Complaint], user_id: str) -> List[schemas.ComplaintResponse]:
+    return [_serialize_complaint(c, user_id) for c in complaints]
+
+
 @router.post("", response_model=schemas.ComplaintResponse)
 def create_complaint(
     complaint_in: schemas.ComplaintCreate,
@@ -53,7 +62,7 @@ def create_complaint(
     audit.log_action(db, current_user.id, audit.COMPLAINT_CREATED, target=complaint.id,
                      details=f"category={complaint.category} private={complaint.is_private}",
                      ip=client_ip(request))
-    return complaint
+    return _serialize_complaint(complaint, current_user.id)
 
 
 @router.get("", response_model=List[schemas.ComplaintResponse])
@@ -66,10 +75,12 @@ def read_complaints(
     """Role-aware feed. Never leaks private or unverified complaints beyond scope."""
     skip, limit = _page(skip, limit)
     if current_user.role == models.Role.ADMIN:
-        return crud.get_all_complaints(db, skip=skip, limit=limit)
-    if current_user.role == models.Role.TEACHER:
-        return crud.get_teacher_feed(db, current_user.id, skip=skip, limit=limit)
-    return crud.get_public_feed(db, skip=skip, limit=limit)
+        complaints = crud.get_all_complaints(db, skip=skip, limit=limit)
+    elif current_user.role == models.Role.TEACHER:
+        complaints = crud.get_teacher_feed(db, current_user.id, skip=skip, limit=limit)
+    else:
+        complaints = crud.get_public_feed(db, skip=skip, limit=limit)
+    return _serialize_complaints(complaints, current_user.id)
 
 
 @router.get("/mine", response_model=List[schemas.ComplaintResponse])
@@ -81,7 +92,8 @@ def my_complaints(
 ):
     """The current user's own complaints, resolved via author_id (server-side)."""
     skip, limit = _page(skip, limit)
-    return crud.get_my_complaints(db, current_user.id, skip=skip, limit=limit)
+    complaints = crud.get_my_complaints(db, current_user.id, skip=skip, limit=limit)
+    return _serialize_complaints(complaints, current_user.id)
 
 
 @router.post("/{complaint_id}/vote")

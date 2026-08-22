@@ -36,16 +36,11 @@ export const Auth = {
         return state.user;
     },
 
-    // A stored session is valid only with BOTH a token and a user, and only if
-    // the token hasn't expired. Expired sessions are purged here so the app
-    // never strands someone on a protected page with dead credentials.
+    // A stored session is valid only with BOTH a token (dummy) and a user.
+    // Expiry is now managed entirely by the backend via HttpOnly cookies.
+    // If a request returns 401, the api layer will handle logout.
     isLoggedIn() {
         if (!this.getToken() || !this.getCurrentUser()) return false;
-        const exp = tokenExpiryMs(state.token);
-        if (exp !== null && exp <= Date.now()) {
-            this.logout();
-            return false;
-        }
         return true;
     },
 

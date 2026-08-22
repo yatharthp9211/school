@@ -12,15 +12,13 @@ import { showToast } from './components.js?v=18';
 // ?v=N busts the browser's module cache so view updates always take effect.
 // Bump the suffix whenever view files change.
 const V = 18;
-const load = (path, exportName, ...args) => () =>
-    import(`../views/${path}.js?v=${V}`).then((m) => m[exportName](...args));
 
 router.addRoute('/', () => import(`../views/landing.js?v=${V}`).then((m) => m.LandingView));
-router.addRoute('/login/student', load('login', 'LoginView', 'student'));
-router.addRoute('/login/teacher', load('login', 'LoginView', 'teacher'));
-router.addRoute('/login/admin', load('login', 'LoginView', 'admin'));
-router.addRoute('/register/student', load('register', 'RegisterView', 'student'));
-router.addRoute('/register/teacher', load('register', 'RegisterView', 'teacher'));
+router.addRoute('/login/student', () => import(`../views/login.js?v=${V}`).then((m) => m.LoginView('student')));
+router.addRoute('/login/teacher', () => import(`../views/login.js?v=${V}`).then((m) => m.LoginView('teacher')));
+router.addRoute('/login/admin', () => import(`../views/login.js?v=${V}`).then((m) => m.LoginView('admin')));
+router.addRoute('/register/student', () => import(`../views/register.js?v=${V}`).then((m) => m.RegisterView('student')));
+router.addRoute('/register/teacher', () => import(`../views/register.js?v=${V}`).then((m) => m.RegisterView('teacher')));
 
 router.addRoute('/student', () => import(`../views/student_dashboard.js?v=${V}`).then((m) => m.StudentDashboardView), { requiresAuth: true, role: 'student' });
 router.addRoute('/complaint', () => import(`../views/complaint_form.js?v=${V}`).then((m) => m.ComplaintFormView), { requiresAuth: true, role: 'student' });

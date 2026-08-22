@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status, UploadFile, File
 from sqlalchemy.orm import Session
 from datetime import timedelta
 import models
@@ -63,12 +63,21 @@ def register_teacher(
 
 @router.post("/check-id")
 def check_id(user_id: str, db: Session = Depends(get_db)):
-    user = crud.get_user(db, user_id=user_id)
-    return {"available": user is None}
+    """Simple check to provide frontend feedback on whether an ID is taken."""
+    if crud.get_user(db, user_id=user_id):
+        return {"available": False}
+    return {"available": True}
 
 
 @router.post("/login", response_model=schemas.Token)
-def login(user_in: schemas.UserLogin, request: Request, db: Session = Depends(get_db)):
+def login(user_in: schemas.UserLogin, request: Request, response: Response, db: Session = Depends(get_db)):
+    from dependencies import auth_limiter
+    if not auth_limiter.allow(f"login:{user_in.username}"):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many login attempts for this account. Please try again later.",
+        )
+
     user = crud.get_user(db, user_id=user_in.username)
     ip = client_ip(request)
 
@@ -107,11 +116,28 @@ def login(user_in: schemas.UserLogin, request: Request, db: Session = Depends(ge
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     audit.log_action(db, user.id, audit.LOGIN_SUCCESS, ip=ip)
+    
+    # Set the token as an HttpOnly cookie
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="strict",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/"
+    )
+    
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "user": _public_user(user),
     }
+
+@router.post("/logout")
+def logout(response: Response):
+    """Clear the authentication cookie."""
+    response.delete_cookie(key="access_token", path="/")
+    return {"message": "Logged out successfully"}
 
 
 @router.get("/me", response_model=schemas.UserResponse)
@@ -152,7 +178,11 @@ def update_profile(
 
 
 @router.get("/users/{user_id}/image")
-def get_user_image(user_id: str, db: Session = Depends(get_db)):
+def get_user_image(
+    user_id: str, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
     """Get the user's profile image (base64 data URL)."""
     user = crud.get_user(db, user_id=user_id)
     if not user or not user.image:

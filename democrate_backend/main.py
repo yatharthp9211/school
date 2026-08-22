@@ -3,7 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
+import logging
 
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        # Uvicorn access log format passes status code in args (usually at index 4, but can be a string like '200' or int 200)
+        # Alternatively, checking if " 200 " is in the formatted message string works reliably.
+        return record.getMessage().find(" 200 ") == -1
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 from config import settings
 from dependencies import auth_limiter, general_limiter, client_ip
 from routes import auth, complaints, leaderboard, ratings, admin, developer
@@ -31,7 +39,7 @@ async def rate_limit_middleware(request: Request, call_next):
         # its own generous bucket and can't starve the strict login/register
         # bucket (brute-force protection).
         if path.startswith(f"{settings.API_V1_STR}/auth/check-id"):
-            limiter, bucket = general_limiter, "check-id"
+            limiter, bucket = auth_limiter, "check-id"
         elif path == f"{settings.API_V1_STR}/auth/me":
             # Authenticated identity reads get their own bucket so every SPA
             # page-load/refresh doesn't consume the strict login budget.
