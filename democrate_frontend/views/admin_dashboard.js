@@ -50,7 +50,7 @@ export const AdminDashboardView = {
                 return `
                     <div class="card card-padded" style="border-left:3px solid var(--color-danger)">
                         <div class="flex justify-between items-start gap-3 flex-wrap">
-                            <span class="small muted">${c.id} · ${new Date(c.created_at).toLocaleDateString()}</span>
+                            <span class="small muted">${c.id} · ${new Date(c.created_at.endsWith('Z') ? c.created_at : c.created_at + 'Z').toLocaleDateString()}</span>
                             ${StatusPillInline('Archived')}
                         </div>
                         <p class="small" style="margin-top:.5rem">${esc(c.text)}</p>

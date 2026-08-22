@@ -254,7 +254,8 @@ export function Navbar(user) {
 
 export function ComplaintCard(complaint, role, currentUserId) {
     const score = complaint.score ?? 0;
-    const dateFormatted = new Date(complaint.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    const dateStr = complaint.created_at.endsWith('Z') ? complaint.created_at : complaint.created_at + 'Z';
+    const dateFormatted = new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
     const status = (complaint.status || '').toLowerCase();
     const upCount = (complaint.student_up || 0) + (complaint.teacher_up || 0);
     const downCount = (complaint.student_down || 0) + (complaint.teacher_down || 0);
