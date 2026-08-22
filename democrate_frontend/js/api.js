@@ -87,7 +87,7 @@ async function fetchApi(url, options = {}) {
 
         // nuke the session or bounce the user for that.
 
-        if (res.status === 401 && token && Auth.getCurrentUser()) {
+        if (res.status === 401 && Auth.getToken() && Auth.getCurrentUser()) {
 
             const role = Auth.getCurrentUser().role || 'student';
 
@@ -330,13 +330,13 @@ export const api = {
     },
 
     async developerUnlock(file) {
-
         const formData = new FormData();
-
         formData.append("file", file);
-
-        return fetchApi(API.DEVELOPER_UNLOCK, { method: 'POST', body: formData });
-
+        return fetchApi(API.DEVELOPER_UNLOCK, { 
+            method: 'POST', 
+            body: formData,
+            headers: { 'Authorization': `Bearer ${Auth.getToken()}` }
+        });
     },
 
     async developerTables() {
