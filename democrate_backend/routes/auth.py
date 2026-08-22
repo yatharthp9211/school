@@ -237,6 +237,7 @@ def developer_login(user_in: schemas.UserLogin, request: Request, db: Session = 
 @router.post("/developer/unlock", response_model=schemas.Token)
 def developer_unlock(
     request: Request,
+    response: Response,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_developer_temp),
@@ -280,8 +281,15 @@ def developer_unlock(
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     audit.log_action(db, current_user.id, audit.LOGIN_SUCCESS, details="dev_complete", ip=client_ip(request))
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="strict",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
     return {
-        "access_token": access_token,
+        "access_token": "cookie-auth",
         "token_type": "bearer",
         "user": _public_user(current_user),
     }
