@@ -30,8 +30,9 @@ export const LeaderboardView = {
                         const teacher = leaderboard[rank - 1];
                         if (!teacher) return '';
                         const accent = rank === 1 ? 'var(--color-gold)' : (rank === 2 ? '#8B93A1' : '#A9744A');
+                        const orderClass = rank === 1 ? 'order-1 sm:order-2' : (rank === 2 ? 'order-2 sm:order-1' : 'order-3 sm:order-3');
                         return `
-                            <div class="card card-padded card-hover flex flex-col items-center text-center" style="min-width:0;border-top:4px solid ${accent};order:${rank === 1 ? 2 : rank === 2 ? 1 : 3}">
+                            <div class="card card-padded card-hover flex flex-col items-center text-center ${orderClass}" style="min-width:0;border-top:4px solid ${accent}">
                                 <span class="display" style="font-size:2rem;color:${accent}">${rank}</span>
                                 ${Avatar(teacher.name, { photo: teacher.photo, sizeClass: 'lg' })}
                                 <h3 class="display" style="font-size:1.1rem;margin-top:.6rem">${esc(teacher.name)}</h3>
