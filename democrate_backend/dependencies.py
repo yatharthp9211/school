@@ -112,8 +112,9 @@ def get_current_active_admin(current_user: models.User = Depends(get_current_use
 def get_current_active_developer(current_user: models.User = Depends(get_current_user)):
     return _require_role(current_user, models.Role.DEVELOPER)
 
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
-def get_developer_temp(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+def get_developer_temp(db: Session = Depends(get_db), token: str = Depends(oauth2_bearer)):
     """The developer 2FA unlock step accepts only a *temp* token issued by
     /auth/developer/login (first factor). The token must carry temp=True and
     belong to a developer account. Full auth is granted only after the file
@@ -123,6 +124,8 @@ def get_developer_temp(db: Session = Depends(get_db), token: str = Depends(oauth
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if not token:
+        raise credentials_exception
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
