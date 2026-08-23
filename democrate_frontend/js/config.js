@@ -3,7 +3,7 @@
 
 export const CONFIG = {
     schoolName: "Sanskar Global School",
-    logo: "https://sanskarglobalschoolgauriganj.com/wp-content/uploads/2025/02/goriganj-log.png",
+    logo: "assets/logo.png",
 
     // Editorial Prestige palette (matches css/styles.css tokens).
     theme: {
