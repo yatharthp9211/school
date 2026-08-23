@@ -18,3 +18,8 @@
   --font-display: "Fraunces", serif;
   --font-body: "Inter", sans-serif;
 }
+
+@import "./reset.css";
+@import "./styles.css";
+@import "./components.css";
+@import "./animations.css";
