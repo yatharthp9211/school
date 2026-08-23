@@ -3,7 +3,7 @@
 
 export const CONFIG = {
     schoolName: "Sanskar Global School",
-    logo: "assets/logo.png",
+    logo: "assets/logo.webp",
 
     // Editorial Prestige palette (matches css/styles.css tokens).
     theme: {
