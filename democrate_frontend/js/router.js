@@ -84,7 +84,7 @@ export const router = {
             const main = document.getElementById('app-main');
             if (main) {
                 main.setAttribute('tabindex', '-1');
-                main.focus({ preventScroll: true });
+                setTimeout(() => main.focus({ preventScroll: true }), 0);
             }
 
             if (typeof view.init === 'function') view.init();

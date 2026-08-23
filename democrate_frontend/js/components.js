@@ -215,7 +215,7 @@ export function Navbar(user) {
         <header class="navbar navbar-auth">
             <div class="nav-inner">
                 <a class="nav-brand" href="#/" aria-label="${CONFIG.schoolName} home">
-                    <img src="${CONFIG.logo}" alt="" loading="lazy">
+                    <img src="${CONFIG.logo}" alt="" width="95" height="30" loading="lazy">
                     <span>${CONFIG.schoolName}</span>
                 </a>
 
