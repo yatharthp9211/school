@@ -74,9 +74,11 @@ export const router = {
             const html = await view.render();
             this.appContainer.innerHTML = html;
             this.appContainer.classList.remove('page-enter');
-            // Force reflow then animate.
-            void this.appContainer.offsetWidth;
-            this.appContainer.classList.add('page-enter');
+            
+            // Use requestAnimationFrame to avoid forced synchronous layout (reflow)
+            requestAnimationFrame(() => {
+                this.appContainer.classList.add('page-enter');
+            });
 
             // Move focus to main content for keyboard / screen-reader users.
             const main = document.getElementById('app-main');
