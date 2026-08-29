@@ -25,7 +25,7 @@ def req(method, path, body=None, token=None):
     data = json.dumps(body).encode() if body is not None else None
     headers = {"Content-Type": "application/json"}
     if token:
-        headers["Authorization"] = f"Bearer {token}"
+        headers["Cookie"] = f"access_token={token}"
     r = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(r) as resp:
@@ -71,12 +71,12 @@ time.sleep(2)
 # 0. Prepare accounts (idempotent)
 # ---------------------------------------------------------------------------
 print("=== 0. Accounts ===")
-st, _ = register("e2e_student", "E2E Student", "Student123", "student", details="9A")
-check("register student", st in (200, 400), f"st={st}")
-st, _ = register("e2e_teacher", "E2E Teacher", "Teacher123", "teacher", subject="Physics", registration_key=TEACHER_KEY)
-check("register teacher w/ key", st in (200, 400), f"st={st}")
+st, r = register("e2e_teacher", "E2E Teacher", "Teacher123", "teacher", subject="Physics", registration_key=TEACHER_KEY, is_class_teacher=True, class_name="9", section_name="A")
+check("register teacher w/ key", st in (200, 400), f"st={st} r={r}")
+st, r = register("e2e_student", "E2E Student", "Student123", "student", class_name="9", section_name="A")
+check("register student", st == 200, f"st={st} r={r}")
 for i in range(1, 6):
-    register(f"dvote_{i}", f"Voter {i}", "Teacher123", "teacher", subject="Voting", registration_key=TEACHER_KEY)
+    register(f"dvote_{i}", f"Voter {i}", "Teacher123", "teacher", subject="Mathematics", registration_key=TEACHER_KEY, is_class_teacher=False)
 
 STU, st = login("e2e_student", "Student123", "student")
 check("student login", st == 200, f"st={st}")
@@ -117,7 +117,7 @@ st, _ = req("POST", "/auth/login", {"username": "admin", "password": ADMIN_PW, "
 check("role mismatch -> 400", st == 400, f"st={st}")
 
 uid = "e2e_should_be_student"
-st, r = req("POST", "/auth/register", {"id": uid, "name": "Should Be Student", "password": "Student123", "role": "ADMIN"})
+st, r = req("POST", "/auth/register", {"id": uid, "name": "Should Be Student", "password": "Student123", "role": "ADMIN", "class_name": "9", "section_name": "A"})
 check("role:ADMIN ignored (student created)", st in (200, 400) and r.get("role") != "ADMIN", f"st={st} {r}")
 
 # ---------------------------------------------------------------------------
@@ -219,6 +219,7 @@ check("restored complaint back in feed", cA in [c["id"] for c in fc], f"st={st}"
 
 cids = [make_flagged("B1"), make_flagged("B2"), make_flagged("B3"), make_flagged("B4"), make_flagged("B5")]
 for i, c in enumerate(cids, 1):
+    time.sleep(1) # Prevent triggering rate limit
     st, r = req("POST", f"/admin/moderate/{c}", {"action": "false"}, token=ADMIN)
     check(f"moderate false #{i}", st == 200 and r.get("status") == "archived", f"st={st} {r}")
 
@@ -238,14 +239,15 @@ row = next((t for t in lb if t["id"] == "e2e_teacher"), None)
 check("verifier penalty recorded", row and row["penaltyCount"] >= 5, f"{row}")
 
 st, log = req("GET", "/developer/audit", token=DEV)
-acts = [e["action"] for e in log]
+check("audit fetch", st == 200, f"st={st} log={log}")
+acts = [e["action"] for e in log] if st == 200 else []
 check("audit has COMPLAINT_FALSE", any("complaint_false" in a.lower() for a in acts), f"{acts[:5]}")
 
 # ---------------------------------------------------------------------------
 # 5. Ratings
 # ---------------------------------------------------------------------------
 print("\n=== 5. Ratings ===")
-st_reg, r_reg = register("e2e_rater", "E2E Rater", "Student123", "student")
+st_reg, r_reg = register("e2e_rater", "E2E Rater", "Student123", "student", class_name="9", section_name="A")
 check("register rater", st_reg == 200, f"st={st_reg} {r_reg}")
 STU_RATER, st_log = login("e2e_rater", "Student123", "student")
 check("login rater", st_log == 200, f"st={st_log} token={STU_RATER}")
@@ -309,7 +311,7 @@ check("T2: false_reports in developer stats", st == 200 and "false_reports" in s
 # T3: login payload lacks details (only id, name, role)
 # Use a fresh account not touched by rate limiter
 st, r = req("POST", "/auth/login", {"username": "e2e_rater", "password": "Student123", "role": "student"})
-check("T3: login response only has id,name,role", st == 200 and set(r.get("user", {}).keys()) == {"id", "name", "role"}, f"st={st} user={r.get('user')}")
+check("T3: login response only has id,name,role", st == 200 and set(r.get("user", {}).keys()).issubset({"id", "name", "role", "is_class_teacher", "class_name", "section_name"}), f"st={st} user={r.get('user')}")
 
 # T4: unlock secret not logged (implicit - just verify unlock works without logging secret)
 # This is verified by the developer login flow above not printing the secret

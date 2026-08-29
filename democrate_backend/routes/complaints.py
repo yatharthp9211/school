@@ -69,17 +69,25 @@ def create_complaint(
 def read_complaints(
     skip: int = 0,
     limit: int = 100,
+    class_group: str | None = None,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
     """Role-aware feed. Never leaks private or unverified complaints beyond scope."""
     skip, limit = _page(skip, limit)
-    if current_user.role == models.Role.ADMIN:
-        complaints = crud.get_all_complaints(db, skip=skip, limit=limit)
-    elif current_user.role == models.Role.TEACHER:
-        complaints = crud.get_teacher_feed(db, current_user.id, skip=skip, limit=limit)
+    
+    # Enforce student filter automatically
+    if current_user.role == models.Role.STUDENT:
+        filter_group = crud.get_class_group(current_user.class_name)
     else:
-        complaints = crud.get_public_feed(db, skip=skip, limit=limit)
+        filter_group = class_group
+        
+    if current_user.role == models.Role.ADMIN:
+        complaints = crud.get_all_complaints(db, skip=skip, limit=limit, class_group=filter_group)
+    elif current_user.role == models.Role.TEACHER:
+        complaints = crud.get_teacher_feed(db, current_user.id, skip=skip, limit=limit, class_group=filter_group)
+    else:
+        complaints = crud.get_public_feed(db, skip=skip, limit=limit, class_group=filter_group)
     return _serialize_complaints(complaints, current_user.id)
 
 

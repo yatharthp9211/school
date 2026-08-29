@@ -31,25 +31,57 @@ def get_user(db: Session, user_id: str):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 
+def get_class_teacher(db: Session, class_name: str, section_name: str):
+    return db.query(models.User).filter(
+        models.User.role == models.Role.TEACHER,
+        models.User.is_class_teacher == True,
+        models.User.class_name == class_name,
+        models.User.section_name == section_name
+    ).first()
+
+
 def create_student(db: Session, data: schemas.RegisterStudent) -> models.User:
-    return _create_user(db, data.id, data.name, data.password, models.Role.STUDENT, data.details)
+    return _create_user(
+        db=db, 
+        user_id=data.id, 
+        name=data.name, 
+        password=data.password, 
+        role=models.Role.STUDENT,
+        class_name=data.class_name,
+        section_name=data.section_name,
+        subject="NA",
+        is_class_teacher=False
+    )
 
 
 def create_teacher(db: Session, data: schemas.RegisterTeacher) -> models.User:
-    details = json.dumps(
-        {"subject": data.subject, "classes": data.classes, "photo": data.photo},
-        ensure_ascii=False,
+    user = _create_user(
+        db=db, 
+        user_id=data.id, 
+        name=data.name, 
+        password=data.password, 
+        role=models.Role.TEACHER,
+        class_name=data.class_name if data.is_class_teacher else "NA",
+        section_name=data.section_name if data.is_class_teacher else "NA",
+        subject=data.subject,
+        is_class_teacher=data.is_class_teacher
     )
-    return _create_user(db, data.id, data.name, data.password, models.Role.TEACHER, details)
+    if data.photo:
+        user.image = data.photo
+        db.commit()
+    return user
 
 
-def _create_user(db, user_id, name, password, role, details) -> models.User:
+def _create_user(db, user_id, name, password, role, class_name, section_name, subject, is_class_teacher) -> models.User:
     user = models.User(
         id=user_id,
         name=name,
         role=role,
         hashed_password=get_password_hash(password),
-        details=details,
+        class_name=class_name,
+        section_name=section_name,
+        subject=subject,
+        is_class_teacher=is_class_teacher,
     )
     db.add(user)
     db.commit()
@@ -62,6 +94,17 @@ def _create_user(db, user_id, name, password, role, details) -> models.User:
 # ---------------------------------------------------------------------------
 
 
+def get_class_group(class_name: str) -> str:
+    if class_name in ["nursery", "LKG", "UKG"]:
+        return "pre-primary"
+    if class_name in ["1", "2", "3", "4", "5"]:
+        return "primary"
+    if class_name in ["6", "7", "8"]:
+        return "upper-primary"
+    if class_name in ["9", "10", "11", "12"]:
+        return "secondary"
+    return "other"
+
 def create_complaint(db: Session, complaint: schemas.ComplaintCreate, author: models.User) -> models.Complaint:
     is_private = bool(complaint.is_private)
     db_complaint = models.Complaint(
@@ -72,6 +115,7 @@ def create_complaint(db: Session, complaint: schemas.ComplaintCreate, author: mo
         target_teacher=complaint.target_teacher,
         verifier_teacher=complaint.verifier_teacher if not is_private else None,
         category=complaint.category,
+        class_group=get_class_group(author.class_name),
         is_private=is_private,
         # Public complaints await teacher verification; private go straight to admin.
         status=models.ComplaintStatus.MODERATED if is_private else models.ComplaintStatus.PENDING,
@@ -97,50 +141,42 @@ def get_my_complaints(db: Session, author_id: str, skip: int = 0, limit: int = 1
     )
 
 
-def get_public_feed(db: Session, skip: int = 0, limit: int = 100):
+def get_public_feed(db: Session, skip: int = 0, limit: int = 100, class_group: str | None = None):
     """Verified, non-private complaints (students / general feed)."""
-    return (
-        db.query(models.Complaint)
-        .filter(
-            models.Complaint.is_private.is_(False),
-            models.Complaint.status.in_(
-                [models.ComplaintStatus.PUBLISHED, models.ComplaintStatus.VOTING,
-                 models.ComplaintStatus.RESOLVED]
-            ),
-        )
-        .order_by(models.Complaint.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
+    q = db.query(models.Complaint).filter(
+        models.Complaint.is_private.is_(False),
+        models.Complaint.status.in_(
+            [models.ComplaintStatus.PUBLISHED, models.ComplaintStatus.VOTING,
+             models.ComplaintStatus.RESOLVED]
+        ),
     )
+    if class_group:
+        q = q.filter(models.Complaint.class_group == class_group)
+    return q.order_by(models.Complaint.created_at.desc()).offset(skip).limit(limit).all()
 
 
-def get_teacher_feed(db: Session, teacher_id: str, skip: int = 0, limit: int = 100):
+def get_teacher_feed(db: Session, teacher_id: str, skip: int = 0, limit: int = 100, class_group: str | None = None):
     """Teacher sees: their OWN assigned pending verification queue + the public feed.
 
     Pending complaints are private to their assigned verifier. Without this the
     `teacher_id` argument was ignored and every teacher saw the whole pending
     queue (a leak of unreviewed complaints across teachers).
     """
-    return (
-        db.query(models.Complaint)
-        .filter(
-            models.Complaint.is_private.is_(False),
-            models.Complaint.status.in_(
-                [models.ComplaintStatus.PENDING, models.ComplaintStatus.PUBLISHED,
-                 models.ComplaintStatus.VOTING, models.ComplaintStatus.RESOLVED]
-            ),
-            # Live complaints are shared; PENDING ones only with their verifier.
-            or_(
-                models.Complaint.status != models.ComplaintStatus.PENDING,
-                models.Complaint.verifier_teacher == teacher_id,
-            ),
-        )
-        .order_by(models.Complaint.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
+    q = db.query(models.Complaint).filter(
+        models.Complaint.is_private.is_(False),
+        models.Complaint.status.in_(
+            [models.ComplaintStatus.PENDING, models.ComplaintStatus.PUBLISHED,
+             models.ComplaintStatus.VOTING, models.ComplaintStatus.RESOLVED]
+        ),
+        # Live complaints are shared; PENDING ones only with their verifier.
+        or_(
+            models.Complaint.status != models.ComplaintStatus.PENDING,
+            models.Complaint.verifier_teacher == teacher_id,
+        ),
     )
+    if class_group:
+        q = q.filter(models.Complaint.class_group == class_group)
+    return q.order_by(models.Complaint.created_at.desc()).offset(skip).limit(limit).all()
 
 
 def get_all_complaints(
@@ -149,6 +185,7 @@ def get_all_complaints(
     limit: int = 100,
     status: str | None = None,
     category: str | None = None,
+    class_group: str | None = None,
 ):
     """Admin view: everything, including private and flagged."""
     q = db.query(models.Complaint).order_by(models.Complaint.created_at.desc())
@@ -156,6 +193,8 @@ def get_all_complaints(
         q = q.filter(models.Complaint.status == status.lower())
     if category:
         q = q.filter(models.Complaint.category == category)
+    if class_group:
+        q = q.filter(models.Complaint.class_group == class_group)
     return q.offset(skip).limit(limit).all()
 
 

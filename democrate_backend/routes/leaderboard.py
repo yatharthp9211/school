@@ -71,15 +71,8 @@ def get_leaderboard(db: Session = Depends(get_db)):
         verified = verified_agg.get(t.id, 0)
         penalty = penalty_agg.get(t.id, 0)
 
-        subject = t.details or "Teacher"
-        photo = None
-        try:
-            parsed = json.loads(t.details)
-            if isinstance(parsed, dict):
-                subject = parsed.get("subject") or subject
-                photo = parsed.get("photo") or None
-        except (json.JSONDecodeError, TypeError):
-            pass  # details is a plain string (subject)
+        subject = t.subject or "Teacher"
+        photo = t.image
 
         leaderboard.append({
             "id": t.id,

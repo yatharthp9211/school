@@ -15,7 +15,7 @@ class EndpointFilter(logging.Filter):
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 from config import settings
 from dependencies import auth_limiter, general_limiter, client_ip
-from routes import auth, complaints, leaderboard, ratings, admin, developer
+from routes import auth, complaints, leaderboard, ratings, admin, developer, teachers
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -84,6 +84,7 @@ app.include_router(leaderboard.router, prefix=f"{settings.API_V1_STR}/leaderboar
 app.include_router(ratings.router, prefix=f"{settings.API_V1_STR}/ratings", tags=["ratings"])
 app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["admin"])
 app.include_router(developer.router, prefix=f"{settings.API_V1_STR}/developer", tags=["developer"])
+app.include_router(teachers.router, prefix=f"{settings.API_V1_STR}/teachers", tags=["teachers"])
 
 
 @app.get("/")

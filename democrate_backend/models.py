@@ -37,8 +37,11 @@ class User(Base):
     role = Column(Enum(Role), nullable=False)
     hashed_password = Column(String, nullable=False)
 
-    # Extra details (JSON or split columns)
-    details = Column(String, nullable=True)  # e.g. "Class 9A", "Mathematics"
+    # Classification details
+    class_name = Column(String, default="NA", nullable=False)
+    section_name = Column(String, default="NA", nullable=False)
+    subject = Column(String, default="NA", nullable=False)
+    is_class_teacher = Column(Boolean, default=False, nullable=False)
 
     # Accountability / moderation
     is_active = Column(Boolean, default=True, nullable=False)   # admin can disable login
@@ -72,6 +75,9 @@ class Complaint(Base):
 
     # Category chosen by the student at submission.
     category = Column(String, nullable=True)
+    
+    # Class group inferred from student's class at creation (e.g. 'primary', 'secondary')
+    class_group = Column(String, nullable=True)
 
     status = Column(Enum(ComplaintStatus), default=ComplaintStatus.PENDING)
     created_at = Column(DateTime, default=_utcnow)

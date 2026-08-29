@@ -14,6 +14,23 @@ class Token(BaseModel):
     user: "LoginUser"
 
 
+ALLOWED_SUBJECTS = [
+    "English", "Hindi", "Mathematics", "EVS/Science", "Social Studies", 
+    "Computer / AI / IT", "Sanskrit", "General Knowledge", "Art/Craft", 
+    "Music", "Sports / Phy. Edu.", "Kaushal Bodh", "Physics", "Biology", 
+    "Chemistry", "Painting", "History", "Polity", "Geography", "Accountancy", 
+    "BST", "Economics", "NA"
+]
+
+ALLOWED_CLASSES = [
+    "nursery", "LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "NA"
+]
+
+ALLOWED_SECTIONS = [
+    "rose", "lily", "jasmin", "daisy", "A", "B", "C", "D", "E", "NA"
+]
+
+
 class _PasswordMixin:
     @field_validator("password")
     @classmethod
@@ -31,17 +48,41 @@ class RegisterStudent(BaseModel, _PasswordMixin):
     id: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
     name: str = Field(min_length=1, max_length=80)
     password: str
-    details: Optional[str] = Field(default=None, max_length=500)  # e.g. "Class 9A - A (Roll: 52)"
+    class_name: str
+    section_name: str
+
+    @field_validator("class_name")
+    @classmethod
+    def validate_class_name(cls, v: str) -> str:
+        if v not in ALLOWED_CLASSES:
+            raise ValueError("Invalid class")
+        return v
+
+    @field_validator("section_name")
+    @classmethod
+    def validate_section_name(cls, v: str) -> str:
+        if v not in ALLOWED_SECTIONS:
+            raise ValueError("Invalid section")
+        return v
 
 
 class RegisterTeacher(BaseModel, _PasswordMixin):
     id: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
     name: str = Field(min_length=1, max_length=80)
     password: str
-    subject: Optional[str] = None
-    classes: Optional[str] = None
+    subject: str
+    is_class_teacher: bool
+    class_name: str = "NA"
+    section_name: str = "NA"
     photo: Optional[str] = None  # data URL
     registration_key: str = Field(min_length=1)
+
+    @field_validator("subject")
+    @classmethod
+    def validate_subject(cls, v: str) -> str:
+        if v not in ALLOWED_SUBJECTS:
+            raise ValueError("Invalid subject")
+        return v
 
 
 class UserLogin(BaseModel):
@@ -58,6 +99,9 @@ class LoginUser(BaseModel):
     id: str
     name: str
     role: Role
+    is_class_teacher: bool = False
+    class_name: str = "NA"
+    section_name: str = "NA"
 
 
 class UserResponse(BaseModel):
@@ -67,8 +111,11 @@ class UserResponse(BaseModel):
     is_active: bool = True
     is_banned: bool = False
     false_count: int = 0
-    details: Optional[str] = None
     has_image: bool = False
+    class_name: str = "NA"
+    section_name: str = "NA"
+    subject: str = "NA"
+    is_class_teacher: bool = False
 
     class Config:
         from_attributes = True

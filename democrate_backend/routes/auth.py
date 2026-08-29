@@ -23,7 +23,7 @@ def _public_user(user: models.User) -> schemas.LoginUser:
     """Minimal user object for the login response. Never includes internal
     details/PII (details can hold a base64 photo and class info) — those are
     returned separately by /auth/me and /auth/profile."""
-    return schemas.LoginUser(id=user.id, name=user.name, role=user.role)
+    return schemas.LoginUser(id=user.id, name=user.name, role=user.role, is_class_teacher=user.is_class_teacher, class_name=user.class_name, section_name=user.section_name)
 
 
 @router.post("/register", response_model=schemas.UserResponse)
@@ -37,6 +37,11 @@ def register_student(
     user = crud.get_user(db, user_id=user_in.id)
     if user:
         raise HTTPException(status_code=400, detail="User ID already registered")
+        
+    class_teacher = crud.get_class_teacher(db, user_in.class_name, user_in.section_name)
+    if not class_teacher:
+        raise HTTPException(status_code=400, detail="Invalid class combination. Class teacher does not exist.")
+        
     created = crud.create_student(db=db, data=user_in)
     audit.log_action(db, created.id, audit.REGISTER_SUCCESS, target=created.id, ip=client_ip(request))
     return created
@@ -56,6 +61,12 @@ def register_teacher(
     user = crud.get_user(db, user_id=user_in.id)
     if user:
         raise HTTPException(status_code=400, detail="User ID already registered")
+        
+    if user_in.is_class_teacher:
+        existing_ct = crud.get_class_teacher(db, user_in.class_name, user_in.section_name)
+        if existing_ct:
+            raise HTTPException(status_code=400, detail=f"Class {user_in.class_name} {user_in.section_name} already has a class teacher.")
+
     created = crud.create_teacher(db=db, data=user_in)
     audit.log_action(db, created.id, audit.REGISTER_SUCCESS, target=created.id, ip=client_ip(request))
     return created
@@ -289,7 +300,7 @@ def developer_unlock(
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
     return {
-        "access_token": "cookie-auth",
+        "access_token": access_token,
         "token_type": "bearer",
         "user": _public_user(current_user),
     }
