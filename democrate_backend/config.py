@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # JWT signing
     SECRET_KEY: str = os.getenv("DEMOCRATE_SECRET_KEY", _DEV_SECRET)
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("DEMOCRATE_TOKEN_TTL_MINUTES", "60"))
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("DEMOCRATE_TOKEN_TTL_MINUTES", "5256000")) # Defaults to 10 years for persistent sessions
 
     # Database — default path anchored to this module's directory so the app
     # finds its DB regardless of the working directory uvicorn is launched from.

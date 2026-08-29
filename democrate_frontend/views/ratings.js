@@ -15,7 +15,28 @@ export const RatingsView = {
         try { teachers = await api.getLeaderboard(); } catch (e) { /* offline */ }
 
         const cards = teachers.length
-            ? teachers.map((t) => TeacherRow(t)).join('')
+            ? teachers.map((t) => `
+                <div class="card card-padded animate-slide-up rating-row" data-teacher-id="${t.id}">
+                    <div class="flex flex-wrap items-center gap-4">
+                        ${Avatar(t.name, { photo: t.photo })}
+                        <div style="min-width:120px;flex:1">
+                            <h3 style="font-family:var(--font-display);font-weight:600;font-size:1.05rem">${esc(t.name)}</h3>
+                            <p class="small muted truncate">${esc(t.subject)}</p>
+                        </div>
+                        <div class="flex items-center gap-1" role="radiogroup" aria-label="Rating for ${esc(t.name)}">
+                            ${[1, 2, 3, 4, 5].map((v) => `
+                                <button type="button" class="rating-star" data-val="${v}" aria-pressed="false" aria-label="${v} star${v > 1 ? 's' : ''}">
+                                    <span class="material-symbols-outlined">star</span>
+                                </button>`).join('')}
+                            <span class="rating-val" style="min-width:1.4ch;font-weight:700;color:var(--color-gold)"></span>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm submit-rating">Submit</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2" style="margin-top:.9rem">
+                        ${CONFIG.ratingTags.map((tag) => `<button type="button" class="tag-chip" data-tag="${tag}">${tag}</button>`).join('')}
+                    </div>
+                </div>
+            `).join('')
             : Empty('No teachers to rate yet.', 'star');
 
         return `
@@ -79,28 +100,3 @@ export const RatingsView = {
         });
     },
 };
-
-function TeacherRow(teacher) {
-    return `
-        <div class="card card-padded animate-slide-up rating-row" data-teacher-id="${teacher.id}">
-            <div class="flex flex-wrap items-center gap-4">
-                ${Avatar(teacher.name, { photo: teacher.photo })}
-                <div style="min-width:0;flex:1">
-                    <h3 style="font-family:var(--font-display);font-weight:600;font-size:1.05rem">${esc(teacher.name)}</h3>
-                    <p class="small muted truncate">${esc(teacher.subject)}</p>
-                </div>
-                <div class="flex items-center gap-1" role="radiogroup" aria-label="Rating for ${esc(teacher.name)}">
-                    ${[1, 2, 3, 4, 5].map((v) => `
-                        <button type="button" class="rating-star" data-val="${v}" aria-pressed="false" aria-label="${v} star${v > 1 ? 's' : ''}">
-                            <span class="material-symbols-outlined">star</span>
-                        </button>`).join('')}
-                    <span class="rating-val" style="min-width:1.4ch;font-weight:700;color:var(--color-gold)"></span>
-                </div>
-                <button type="button" class="btn btn-primary btn-sm submit-rating">Submit</button>
-            </div>
-            <div class="flex flex-wrap gap-2" style="margin-top:.9rem">
-                ${CONFIG.ratingTags.map((tag) => `<button type="button" class="tag-chip" data-tag="${tag}">${tag}</button>`).join('')}
-            </div>
-        </div>
-    `;
-}

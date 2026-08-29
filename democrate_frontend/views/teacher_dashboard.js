@@ -6,9 +6,41 @@ import { Navbar, ComplaintCard, Empty, Stat, Footer, esc, Unauthorized } from '.
 
 export const TeacherDashboardView = {
     render: async () => {
-        const user = Auth.getCurrentUser();
+        let user = Auth.getCurrentUser();
         if (!user || user.role !== 'teacher') {
             return Unauthorized();
+        }
+        
+        try {
+            user = await api.me();
+            Auth.setSession(Auth.getToken(), user); // Update local storage with full details
+        } catch (e) {
+            // Ignore error, fallback to cached user
+        }
+        
+        let rosterHtml = '';
+        if (user.is_class_teacher) {
+            try {
+                const students = await api.getMyStudents();
+                if (students.length === 0) {
+                    rosterHtml = Empty('No students registered in your class yet.', 'group');
+                } else {
+                    rosterHtml = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            ${students.map(s => `
+                                <div class="card card-padded flex justify-between items-center animate-fade-in">
+                                    <div>
+                                        <div class="strong">${esc(s.name)}</div>
+                                    </div>
+                                    <button class="btn btn-ghost btn-sm remove-student-btn" data-id="${esc(s.id)}">Remove</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                rosterHtml = `<div class="field-error-text">Failed to load class roster: ${err.message}</div>`;
+            }
         }
 
         const feed = await api.getComplaints(); // role-aware: assigned pending + public feed
@@ -47,6 +79,13 @@ export const TeacherDashboardView = {
                     <div class="flex flex-col gap-4">${verifyCards}</div>
                 </section>
 
+                ${user.is_class_teacher ? `
+                <section style="margin-top:2rem">
+                    <h2 class="display" style="font-size:1.25rem;margin-bottom:.9rem">My Class Roster (${esc(user.class_name)} ${esc(user.section_name)})</h2>
+                    ${rosterHtml}
+                </section>
+                ` : ''}
+
                 <section style="margin-top:2rem">
                     <h2 class="display" style="font-size:1.25rem;margin-bottom:.9rem">Recent public reports</h2>
                     <div class="flex flex-col gap-4">${feedCards}</div>
@@ -56,4 +95,24 @@ export const TeacherDashboardView = {
             ${Footer()}
         `;
     },
+    
+    init: () => {
+        document.querySelectorAll('.remove-student-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if (confirm('Are you sure you want to remove this student? They will not be able to log in anymore.')) {
+                    const studentId = e.target.dataset.id;
+                    e.target.disabled = true;
+                    e.target.textContent = 'Removing...';
+                    try {
+                        await api.removeStudent(studentId);
+                        e.target.closest('.card').remove();
+                    } catch (err) {
+                        alert(err.message || 'Failed to remove student');
+                        e.target.disabled = false;
+                        e.target.textContent = 'Remove';
+                    }
+                }
+            });
+        });
+    }
 };

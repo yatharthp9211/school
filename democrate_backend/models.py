@@ -37,13 +37,19 @@ class User(Base):
     role = Column(Enum(Role), nullable=False)
     hashed_password = Column(String, nullable=False)
 
-    # Extra details (JSON or split columns)
-    details = Column(String, nullable=True)  # e.g. "Class 9A", "Mathematics"
+    # Classification details
+    class_name = Column(String, default="NA", nullable=False)
+    section_name = Column(String, default="NA", nullable=False)
+    subject = Column(String, default="NA", nullable=False)
+    is_class_teacher = Column(Boolean, default=False, nullable=False)
 
     # Accountability / moderation
     is_active = Column(Boolean, default=True, nullable=False)   # admin can disable login
     is_banned = Column(Boolean, default=False, nullable=False)  # cannot submit, can still log in
     false_count = Column(Integer, default=0, nullable=False)    # admin-confirmed false complaints
+    
+    # Security: Revoke tokens issued before this timestamp
+    tokens_valid_after = Column(DateTime, nullable=True)
 
     # Profile image — base64 data URL (max ~1 MB, enforced at the API layer).
     image = Column(Text, nullable=True)
@@ -69,6 +75,9 @@ class Complaint(Base):
 
     # Category chosen by the student at submission.
     category = Column(String, nullable=True)
+    
+    # Class group inferred from student's class at creation (e.g. 'primary', 'secondary')
+    class_group = Column(String, nullable=True)
 
     status = Column(Enum(ComplaintStatus), default=ComplaintStatus.PENDING)
     created_at = Column(DateTime, default=_utcnow)

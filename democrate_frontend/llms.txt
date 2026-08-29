@@ -1,0 +1,11 @@
+# Democrate - Sanskar Global School
+
+> Democrate is an anonymous complaint and feedback platform for Sanskar Global School, designed to help students report concerns safely.
+
+## Navigation
+- [Student Portal](/#/login/student) - Submit complaints anonymously
+- [Teacher Portal](/#/login/teacher) - Verify complaints and view ratings
+- [Admin Portal](/#/login/admin) - Moderate and resolve issues
+
+## Usage guidelines
+This site is a private application for Sanskar Global School. Unauthorized scraping or automated submission of complaints is strictly prohibited.

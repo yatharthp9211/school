@@ -8,7 +8,9 @@ import security
 from config import settings
 from ratelimit import SlidingWindowLimiter
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+from fastapi.security import APIKeyCookie
+
+oauth2_scheme = APIKeyCookie(name="access_token", auto_error=False)
 
 # ---------------------------------------------------------------------------
 # Rate limiting (in-memory; single-process pilot. Edge (Cloudflare) is the
@@ -51,6 +53,8 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if not token:
+        raise credentials_exception
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
@@ -60,8 +64,14 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
         raise credentials_exception
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user is None:
+    if user is None or not user.is_active:
         raise credentials_exception
+
+    # Check if the token was issued before the user's password was reset/banned
+    iat = payload.get("iat")
+    if iat and user.tokens_valid_after:
+        if iat < int(user.tokens_valid_after.timestamp()):
+            raise credentials_exception
 
     # A `temp` token is the first factor of the developer 2FA flow — it is only
     # valid for the file-upload unlock step (guarded separately by
@@ -102,8 +112,9 @@ def get_current_active_admin(current_user: models.User = Depends(get_current_use
 def get_current_active_developer(current_user: models.User = Depends(get_current_user)):
     return _require_role(current_user, models.Role.DEVELOPER)
 
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
-def get_developer_temp(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+def get_developer_temp(db: Session = Depends(get_db), token: str = Depends(oauth2_bearer)):
     """The developer 2FA unlock step accepts only a *temp* token issued by
     /auth/developer/login (first factor). The token must carry temp=True and
     belong to a developer account. Full auth is granted only after the file
@@ -113,6 +124,8 @@ def get_developer_temp(db: Session = Depends(get_db), token: str = Depends(oauth
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if not token:
+        raise credentials_exception
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")

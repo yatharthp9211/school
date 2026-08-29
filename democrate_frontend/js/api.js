@@ -22,9 +22,8 @@ async function fetchApi(url, options = {}) {
 
     }
 
-    const token = Auth.getToken();
-
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    // Remove manual Authorization header and use credentials to send HttpOnly cookies
+    options.credentials = 'include';
 
 
 
@@ -88,7 +87,7 @@ async function fetchApi(url, options = {}) {
 
         // nuke the session or bounce the user for that.
 
-        if (res.status === 401 && token && Auth.getCurrentUser()) {
+        if (res.status === 401 && Auth.getToken() && Auth.getCurrentUser()) {
 
             const role = Auth.getCurrentUser().role || 'student';
 
@@ -240,10 +239,20 @@ export const api = {
 
     // ---- Leaderboard & Ratings ----
 
+    // ---- Leaderboard & Ratings ----
+
     async getLeaderboard() {
 
         return fetchApi(API.LEADERBOARD);
 
+    },
+    
+    // ---- Teacher Roster ----
+    async getMyStudents() {
+        return fetchApi(API.TEACHER_STUDENTS);
+    },
+    async removeStudent(studentId) {
+        return fetchApi(`${API.TEACHER_REMOVE_STUDENT}/${encodeURIComponent(studentId)}`, { method: 'DELETE' });
     },
 
     async submitRating(teacherId, rating, tags) {
@@ -331,13 +340,13 @@ export const api = {
     },
 
     async developerUnlock(file) {
-
         const formData = new FormData();
-
         formData.append("file", file);
-
-        return fetchApi(API.DEVELOPER_UNLOCK, { method: 'POST', body: formData });
-
+        return fetchApi(API.DEVELOPER_UNLOCK, { 
+            method: 'POST', 
+            body: formData,
+            headers: { 'Authorization': `Bearer ${Auth.getToken()}` }
+        });
     },
 
     async developerTables() {

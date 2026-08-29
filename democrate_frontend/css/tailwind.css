@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/container-queries";
+
+@theme {
+  --color-primary: #0E6B45;
+  --color-primary-strong: #0A5536;
+  --color-secondary: #1B2530;
+  --color-accent: #C6A15B;
+  --color-on-surface: #1B2530;
+  --color-on-surface-variant: #5C6B7A;
+  --color-background: #FAF7F2;
+  --color-surface-container-high: #F4EEE4;
+  --color-surface-container: #FFFFFF;
+  --color-inverse-surface: #1B2530;
+  --color-error: #B3423E;
+  
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
+}
+
+@import "./reset.css";
+@import "./styles.css";
+@import "./components.css";
+@import "./animations.css";

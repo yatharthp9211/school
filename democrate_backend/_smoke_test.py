@@ -48,7 +48,7 @@ def call(method, path, body=None, token=None):
     req = urllib.request.Request(BASE + path, data=data, method=method)
     req.add_header("Content-Type", "application/json")
     if token:
-        req.add_header("Authorization", f"Bearer {token}")
+        req.add_header("Cookie", f"access_token={token}")
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
             raw = r.read()
@@ -86,10 +86,10 @@ try:
     check("server boots", ready)
 
     # Register student + teacher, login.
-    st, r = call("POST", "/auth/register", {"id": "S-TEST1", "name": "Test Student", "password": "Student@123", "details": "Class 9A"})
-    check("register student", st == 200, r)
-    st, r = call("POST", "/auth/register/teacher", {"id": "T-TEST1", "name": "Test Teacher", "password": "Teacher@123", "subject": "Maths", "registration_key": "test-key-123"})
+    st, r = call("POST", "/auth/register/teacher", {"id": "T-TEST1", "name": "Test Teacher", "password": "Teacher@123", "subject": "Mathematics", "is_class_teacher": True, "class_name": "9", "section_name": "A", "registration_key": "test-key-123"})
     check("register teacher", st == 200, r)
+    st, r = call("POST", "/auth/register", {"id": "S-TEST1", "name": "Test Student", "password": "Student@123", "class_name": "9", "section_name": "A"})
+    check("register student", st == 200, r)
 
     st, bad = call("POST", "/auth/login", {"username": "S-TEST1", "password": "wrongpass", "role": "student"})
     check("wrong password -> 401 (no session nuke)", st == 401 and "Incorrect" in str(bad.get("detail", "")), bad)

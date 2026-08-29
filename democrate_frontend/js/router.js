@@ -31,8 +31,8 @@ export const router = {
     },
 
     navigate(path) {
-        if (window.location.hash.slice(1) !== path) window.location.hash = path;
-        else this.handleRoute();
+        window.location.hash = path;
+        this.handleRoute();
     },
 
     // Re-run the current view (after data-changing actions) without a skeleton flash.
@@ -74,15 +74,17 @@ export const router = {
             const html = await view.render();
             this.appContainer.innerHTML = html;
             this.appContainer.classList.remove('page-enter');
-            // Force reflow then animate.
-            void this.appContainer.offsetWidth;
-            this.appContainer.classList.add('page-enter');
+            
+            // Use requestAnimationFrame to avoid forced synchronous layout (reflow)
+            requestAnimationFrame(() => {
+                this.appContainer.classList.add('page-enter');
+            });
 
             // Move focus to main content for keyboard / screen-reader users.
             const main = document.getElementById('app-main');
             if (main) {
                 main.setAttribute('tabindex', '-1');
-                main.focus({ preventScroll: true });
+                setTimeout(() => main.focus({ preventScroll: true }), 0);
             }
 
             if (typeof view.init === 'function') view.init();

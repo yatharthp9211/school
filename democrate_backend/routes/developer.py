@@ -147,7 +147,7 @@ def developer_audit_log(
             "target": e.target,
             "details": e.details,
             "ip_address": e.ip_address,
-            "timestamp": e.timestamp.isoformat() if e.timestamp else None,
+            "timestamp": e.timestamp.isoformat() + "Z" if e.timestamp else None,
         }
         for e in entries
     ]

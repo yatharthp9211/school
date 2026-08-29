@@ -68,52 +68,6 @@ export function Loading(message = 'Loading…') {
     return `<div class="empty" style="margin-top:8rem"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite">refresh</span><p>${message}</p></div>`;
 }
 
-// ---------------------------------------------------------------------------
-// List pagination helper
-// ---------------------------------------------------------------------------
-
-/**
- * Handles the "load more" pattern for list views.
- * @param {Object} opts
- *   - listEl: DOM element to render into
- *   - getRows: async function returning all rows
- *   - renderRow: function(row, index) => HTML string
- *   - pageSize: number of items per page (default 20)
- *   - emptyMessage: string for Empty() when no rows
- *   - emptyIcon: icon for Empty()
- */
-export async function paginateRows({ listEl, getRows, renderRow, pageSize = 20, emptyMessage = 'No items.', emptyIcon = 'inbox' }) {
-    if (!listEl) return;
-
-    let allRows = [];
-    let rendered = 0;
-
-    const render = () => {
-        const visible = allRows.slice(0, rendered + pageSize);
-        if (!visible.length) {
-            listEl.innerHTML = Empty(emptyMessage, emptyIcon);
-            return;
-        }
-        listEl.innerHTML = visible.map((row, i) => renderRow(row, i)).join('')
-            + (visible.length < allRows.length
-                ? `<div class="flex justify-center" style="margin-top:1rem"><button class="btn btn-soft" data-action="load-more">Load more</button></div>`
-                : '');
-    };
-
-    // Initial load
-    allRows = await getRows();
-    render();
-
-    // Load more handler
-    listEl.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-action="load-more"]');
-        if (btn) {
-            rendered += pageSize;
-            render();
-        }
-    });
-}
-
 export function filterAndSortComplaints(rows, { query = '', category = '', sort = 'date-desc' } = {}) {
     const q = (query || '').trim().toLowerCase();
     const cat = category || '';
@@ -261,7 +215,7 @@ export function Navbar(user) {
         <header class="navbar navbar-auth">
             <div class="nav-inner">
                 <a class="nav-brand" href="#/" aria-label="${CONFIG.schoolName} home">
-                    <img src="${CONFIG.logo}" alt="" loading="lazy">
+                    <img src="${CONFIG.logo}" alt="" width="95" height="30" loading="lazy">
                     <span>${CONFIG.schoolName}</span>
                 </a>
 
@@ -300,7 +254,8 @@ export function Navbar(user) {
 
 export function ComplaintCard(complaint, role, currentUserId) {
     const score = complaint.score ?? 0;
-    const dateFormatted = new Date(complaint.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    const dateStr = complaint.created_at.endsWith('Z') ? complaint.created_at : complaint.created_at + 'Z';
+    const dateFormatted = new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
     const status = (complaint.status || '').toLowerCase();
     const upCount = (complaint.student_up || 0) + (complaint.teacher_up || 0);
     const downCount = (complaint.student_down || 0) + (complaint.teacher_down || 0);
@@ -335,7 +290,7 @@ export function ComplaintCard(complaint, role, currentUserId) {
         // Voters (student / general public). No vote buttons on your own
         // complaint (the backend rejects self-votes) or once voting is closed —
         // they'd just 400 on every click.
-        const isOwn = !!currentUserId && complaint.author_id === currentUserId;
+        const isOwn = !!complaint.is_author;
         const votable = ['published', 'voting'].includes(status);
         actions = (isOwn || !votable) ? '' : `
             <div class="flex items-center gap-3 mt-4 pt-4" style="border-top:1px solid var(--color-hairline)">
@@ -420,11 +375,16 @@ export function TeacherCard(teacher, { showRank = true } = {}) {
 
 export function Footer() {
     return `
-        <footer class="flex flex-col items-center gap-1 py-8 mt-8" style="border-top:1px solid var(--color-hairline);color:var(--color-ink-muted);font-size:.8rem">
-            <span style="font-family:var(--font-display);font-size:1rem;color:var(--color-ink)">${CONFIG.schoolName}</span>
-            <span>${CONFIG.tagline} — your identity stays anonymous to students and teachers.</span>
-            <div style="margin-top: 1rem">
-                <a href="#/developer/login" class="nav-link" style="font-size: .8rem; text-decoration: underline;">Developer Portal</a>
+        <footer class="flex justify-between items-center py-8 mt-8" style="border-top:1px solid var(--color-hairline);color:var(--color-ink-muted);font-size:.8rem">
+            <div class="flex flex-col gap-1">
+                <span style="font-family:var(--font-display);font-size:1rem;color:var(--color-ink)">${CONFIG.schoolName}</span>
+                <span>${CONFIG.tagline} — your identity stays anonymous to students and teachers.</span>
+                <div style="margin-top: 1rem">
+                    <a href="#/developer/login" class="nav-link" style="font-size: .8rem; text-decoration: underline;">Developer Portal</a>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                This website is created by Yatharth Pandey
             </div>
         </footer>
     `;

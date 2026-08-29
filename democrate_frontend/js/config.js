@@ -3,7 +3,7 @@
 
 export const CONFIG = {
     schoolName: "Sanskar Global School",
-    logo: "https://sanskarglobalschoolgauriganj.com/wp-content/uploads/2025/02/goriganj-log.png",
+    logo: "assets/logo.webp",
 
     // Editorial Prestige palette (matches css/styles.css tokens).
     theme: {
@@ -70,6 +70,8 @@ export const API = {
     VERIFY: `${API_BASE}/complaints/verify`,
     LEADERBOARD: `${API_BASE}/leaderboard`,
     RATINGS: `${API_BASE}/ratings`,
+    TEACHER_STUDENTS: `${API_BASE}/teachers/my-students`,
+    TEACHER_REMOVE_STUDENT: `${API_BASE}/teachers/remove-student`,
     ADMIN_COMPLAINTS: `${API_BASE}/admin/complaints`,
     ADMIN_FLAGGED: `${API_BASE}/admin/flagged`,
     ADMIN_FALSE: `${API_BASE}/admin/false`,
@@ -91,27 +93,29 @@ export const API = {
 
 // Initialize Tailwind config globally (fallback for utility classes; the
 // signature components use custom CSS driven by css/styles.css tokens).
-tailwind.config = {
-    darkMode: "class",
-    theme: {
-        extend: {
-            colors: {
-                primary: CONFIG.theme.primary,
-                "primary-strong": CONFIG.theme.primaryStrong,
-                secondary: CONFIG.theme.secondary,
-                accent: CONFIG.theme.accent,
-                "on-surface": CONFIG.theme.text,
-                "on-surface-variant": CONFIG.theme.textMuted,
-                background: CONFIG.theme.background,
-                "surface-container-high": CONFIG.theme.surfaceSunken,
-                "surface-container": CONFIG.theme.surface,
-                "inverse-surface": CONFIG.theme.secondary,
-                error: CONFIG.theme.error,
-            },
-            fontFamily: {
-                display: ["Fraunces", "serif"],
-                body: ["Inter", "sans-serif"],
+if (typeof tailwind !== 'undefined') {
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    primary: CONFIG.theme.primary,
+                    "primary-strong": CONFIG.theme.primaryStrong,
+                    secondary: CONFIG.theme.secondary,
+                    accent: CONFIG.theme.accent,
+                    "on-surface": CONFIG.theme.text,
+                    "on-surface-variant": CONFIG.theme.textMuted,
+                    background: CONFIG.theme.background,
+                    "surface-container-high": CONFIG.theme.surfaceSunken,
+                    "surface-container": CONFIG.theme.surface,
+                    "inverse-surface": CONFIG.theme.secondary,
+                    error: CONFIG.theme.error,
+                },
+                fontFamily: {
+                    display: ["Fraunces", "serif"],
+                    body: ["Inter", "sans-serif"],
+                },
             },
         },
-    },
-};
+    };
+}

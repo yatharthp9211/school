@@ -29,9 +29,11 @@ function notify() {
 
 // --- Session ---
 export function setSession(token, user) {
-    state.token = token;
+    // We no longer store the real token; authentication is handled via HttpOnly cookies.
+    // 'token' arg is ignored, we just store the user metadata.
+    state.token = "cookie-auth"; // Dummy token to satisfy legacy checks
     state.user = user;
-    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ token, user })); } catch (e) { /* private mode */ }
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ user })); } catch (e) { /* private mode */ }
     notify();
 }
 
@@ -40,17 +42,10 @@ export function loadSession() {
         const raw = localStorage.getItem(SESSION_KEY);
         if (raw) {
             const d = JSON.parse(raw);
-            if (d && d.token && d.user) {
-                state.token = d.token;
+            if (d && d.user) {
+                state.token = "cookie-auth"; // Dummy
                 state.user = d.user;
                 return true;
-            }
-            // Partial/corrupt session (token but no user, or unreadable):
-            // purge it so the app never treats the user as half-logged-in.
-            if (d && d.token) {
-                localStorage.removeItem(SESSION_KEY);
-                state.token = null;
-                state.user = null;
             }
         }
     } catch (e) { /* corrupted session — ignore */ }
