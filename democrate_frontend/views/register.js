@@ -4,6 +4,22 @@ import { api } from '../js/api.js?v=18';
 import { router } from '../js/router.js?v=18';
 import { showToast, ThemeToggle } from '../js/components.js?v=18';
 
+const ALLOWED_SUBJECTS = [
+    "English", "Hindi", "Mathematics", "EVS/Science", "Social Studies", 
+    "Computer / AI / IT", "Sanskrit", "General Knowledge", "Art/Craft", 
+    "Music", "Sports / Phy. Edu.", "Kaushal Bodh", "Physics", "Biology", 
+    "Chemistry", "Painting", "History", "Polity", "Geography", "Accountancy", 
+    "BST", "Economics"
+];
+
+const ALLOWED_CLASSES = [
+    "nursery", "LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"
+];
+
+const ALLOWED_SECTIONS = [
+    "rose", "lily", "jasmin", "daisy", "A", "B", "C", "D", "E"
+];
+
 function strengthScore(pw) {
     let s = 0;
     if (!pw) return 0;
@@ -103,6 +119,22 @@ export function RegisterView(role) {
                 });
             });
 
+            const isClassTeacherCheckbox = document.getElementById('regIsClassTeacher');
+            const classSectionFields = document.getElementById('classSectionFields');
+            if (isClassTeacherCheckbox && classSectionFields) {
+                isClassTeacherCheckbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        classSectionFields.style.display = 'block';
+                        document.getElementById('regClass').required = true;
+                        document.getElementById('regSection').required = true;
+                    } else {
+                        classSectionFields.style.display = 'none';
+                        document.getElementById('regClass').required = false;
+                        document.getElementById('regSection').required = false;
+                    }
+                });
+            }
+
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const errEl = document.getElementById('form-error');
@@ -113,13 +145,22 @@ export function RegisterView(role) {
                     data.id = idInput.value.trim();
                     data.name = document.getElementById('regName').value.trim();
                     data.password = pw.value;
-                    data.details = document.getElementById('regDetails').value.trim() || null;
+                    data.class_name = document.getElementById('regClass').value;
+                    data.section_name = document.getElementById('regSection').value;
                 } else {
                     data.id = idInput.value.trim();
                     data.name = document.getElementById('regName').value.trim();
                     data.password = pw.value;
-                    data.subject = document.getElementById('regSubject').value.trim() || null;
+                    data.subject = document.getElementById('regSubject').value;
                     data.registration_key = document.getElementById('regKey').value.trim();
+                    data.is_class_teacher = document.getElementById('regIsClassTeacher').checked;
+                    if (data.is_class_teacher) {
+                        data.class_name = document.getElementById('regClass').value;
+                        data.section_name = document.getElementById('regSection').value;
+                    } else {
+                        data.class_name = "NA";
+                        data.section_name = "NA";
+                    }
                 }
 
                 if (data.id.length < 3) return (errEl.textContent = 'User ID must be at least 3 characters.');
@@ -178,6 +219,27 @@ function passwordFields() {
     `;
 }
 
+function classSectionInputs() {
+    return `
+        <div class="grid grid-cols-2 gap-4">
+            <div class="field">
+                <label class="label" for="regClass">Class <span class="req">*</span></label>
+                <select class="input" id="regClass" required>
+                    <option value="" disabled selected>Select class</option>
+                    ${ALLOWED_CLASSES.map(c => `<option value="${c}">${c}</option>`).join('')}
+                </select>
+            </div>
+            <div class="field">
+                <label class="label" for="regSection">Section <span class="req">*</span></label>
+                <select class="input" id="regSection" required>
+                    <option value="" disabled selected>Select section</option>
+                    ${ALLOWED_SECTIONS.map(s => `<option value="${s}">${s}</option>`).join('')}
+                </select>
+            </div>
+        </div>
+    `;
+}
+
 function studentForm() {
     return `
         <form id="register-form" class="flex flex-col gap-4" style="margin-top:1.4rem" novalidate>
@@ -190,10 +252,7 @@ function studentForm() {
                 <label class="label" for="regName">Full name <span class="req">*</span></label>
                 <input class="input" id="regName" autocomplete="name" required>
             </div>
-            <div class="field">
-                <label class="label" for="regDetails">Class &amp; section <span class="hint">(optional)</span></label>
-                <input class="input" id="regDetails" placeholder="e.g. 9A · Roll 24">
-            </div>
+            ${classSectionInputs()}
             ${passwordFields()}
             <span class="field-error-text" id="form-error" role="alert"></span>
             <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">Create account</button>
@@ -215,8 +274,18 @@ function teacherForm() {
                 <input class="input" id="regName" autocomplete="name" required>
             </div>
             <div class="field">
-                <label class="label" for="regSubject">Subject <span class="hint">(optional)</span></label>
-                <input class="input" id="regSubject" placeholder="e.g. Mathematics">
+                <label class="label" for="regSubject">Subject <span class="req">*</span></label>
+                <select class="input" id="regSubject" required>
+                    <option value="" disabled selected>Select subject</option>
+                    ${ALLOWED_SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('')}
+                </select>
+            </div>
+            <div class="field" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                <input type="checkbox" id="regIsClassTeacher" style="width: 1.2rem; height: 1.2rem;">
+                <label for="regIsClassTeacher" style="margin: 0; font-weight: 500; cursor: pointer;">I am a Class Teacher</label>
+            </div>
+            <div id="classSectionFields" style="display: none;">
+                ${classSectionInputs()}
             </div>
             <div class="field">
                 <label class="label" for="regKey">Registration key <span class="req">*</span></label>

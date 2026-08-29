@@ -70,6 +70,8 @@ export const API = {
     VERIFY: `${API_BASE}/complaints/verify`,
     LEADERBOARD: `${API_BASE}/leaderboard`,
     RATINGS: `${API_BASE}/ratings`,
+    TEACHER_STUDENTS: `${API_BASE}/teachers/my-students`,
+    TEACHER_REMOVE_STUDENT: `${API_BASE}/teachers/remove-student`,
     ADMIN_COMPLAINTS: `${API_BASE}/admin/complaints`,
     ADMIN_FLAGGED: `${API_BASE}/admin/flagged`,
     ADMIN_FALSE: `${API_BASE}/admin/false`,

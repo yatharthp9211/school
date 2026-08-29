@@ -28,16 +28,16 @@ export const ComplaintsListView = {
 
                 <div class="card card-padded flex flex-wrap gap-3 items-center" style="margin-top:1.5rem">
                     <div class="form-group" style="flex:1;min-width:200px;margin:0">
-                        <input type="search" id="fb-q" placeholder="Search complaints or IDs…">
+                        <input type="search" id="fb-q" class="input" placeholder="Search complaints or IDs…">
                     </div>
                     <div class="form-group" style="min-width:160px;margin:0">
-                        <select id="fb-category">
+                        <select id="fb-category" class="input">
                             <option value="">All categories</option>
                             ${categoryOptions}
                         </select>
                     </div>
-                    <div class="form-group" style="min-width:180px;margin:0">
-                        <select id="fb-sort">
+                    <div class="form-group" style="min-width:160px;margin:0">
+                        <select id="fb-sort" class="input">
                             <option value="date-desc">Newest first</option>
                             <option value="date-asc">Oldest first</option>
                             <option value="score-desc">Highest score</option>
@@ -46,6 +46,17 @@ export const ComplaintsListView = {
                             <option value="text-desc">Complaint (Z-A)</option>
                         </select>
                     </div>
+                    ${user.role === 'admin' || user.role === 'teacher' ? `
+                    <div class="form-group" style="min-width:160px;margin:0">
+                        <select id="fb-class-group" class="input">
+                            <option value="">All class groups</option>
+                            <option value="pre-primary">Pre-primary</option>
+                            <option value="primary">Primary</option>
+                            <option value="upper-primary">Upper primary</option>
+                            <option value="secondary">Secondary</option>
+                        </select>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <section style="margin-top:1.5rem">
@@ -66,6 +77,7 @@ export const ComplaintsListView = {
         const qInput = document.getElementById('fb-q');
         const catSel = document.getElementById('fb-category');
         const sortSel = document.getElementById('fb-sort');
+        const cgSel = document.getElementById('fb-class-group');
         if (!list) return;
         const user = Auth.getCurrentUser();
 
@@ -80,11 +92,14 @@ export const ComplaintsListView = {
         };
 
         const reRender = () => {
-            const rows = filterAndSortComplaints(all, {
+            let rows = filterAndSortComplaints(all, {
                 query: qInput?.value || '',
                 category: catSel?.value || '',
                 sort: sortSel?.value || 'date-desc',
             });
+            if (cgSel && cgSel.value) {
+                rows = rows.filter(c => c.class_group === cgSel.value);
+            }
             render(rows);
         };
 
@@ -94,12 +109,21 @@ export const ComplaintsListView = {
         });
         catSel?.addEventListener('change', reRender);
         sortSel?.addEventListener('change', reRender);
+        
+        const fetchComplaints = () => {
+            const params = cgSel && cgSel.value ? { class_group: cgSel.value } : {};
+            api.getComplaints(params)
+                .then((feed) => {
+                    all = feed.filter((c) => !c.is_private);
+                    reRender();
+                })
+                .catch((e) => {
+                    list.innerHTML = `<div class="field-error-text">Failed to load feed: ${e.message}</div>`;
+                });
+        };
 
-        api.getComplaints()
-            .then((feed) => {
-                all = feed.filter((c) => !c.is_private);
-                reRender();
-            })
-            .catch(() => { list.innerHTML = Empty('Could not load complaints.', 'error'); });
+        cgSel?.addEventListener('change', fetchComplaints);
+        
+        fetchComplaints();
     },
 };

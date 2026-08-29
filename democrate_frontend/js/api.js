@@ -239,10 +239,20 @@ export const api = {
 
     // ---- Leaderboard & Ratings ----
 
+    // ---- Leaderboard & Ratings ----
+
     async getLeaderboard() {
 
         return fetchApi(API.LEADERBOARD);
 
+    },
+    
+    // ---- Teacher Roster ----
+    async getMyStudents() {
+        return fetchApi(API.TEACHER_STUDENTS);
+    },
+    async removeStudent(studentId) {
+        return fetchApi(`${API.TEACHER_REMOVE_STUDENT}/${encodeURIComponent(studentId)}`, { method: 'DELETE' });
     },
 
     async submitRating(teacherId, rating, tags) {

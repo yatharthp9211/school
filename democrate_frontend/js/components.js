@@ -375,11 +375,16 @@ export function TeacherCard(teacher, { showRank = true } = {}) {
 
 export function Footer() {
     return `
-        <footer class="flex flex-col items-center gap-1 py-8 mt-8" style="border-top:1px solid var(--color-hairline);color:var(--color-ink-muted);font-size:.8rem">
-            <span style="font-family:var(--font-display);font-size:1rem;color:var(--color-ink)">${CONFIG.schoolName}</span>
-            <span>${CONFIG.tagline} — your identity stays anonymous to students and teachers.</span>
-            <div style="margin-top: 1rem">
-                <a href="#/developer/login" class="nav-link" style="font-size: .8rem; text-decoration: underline;">Developer Portal</a>
+        <footer class="flex justify-between items-center py-8 mt-8" style="border-top:1px solid var(--color-hairline);color:var(--color-ink-muted);font-size:.8rem">
+            <div class="flex flex-col gap-1">
+                <span style="font-family:var(--font-display);font-size:1rem;color:var(--color-ink)">${CONFIG.schoolName}</span>
+                <span>${CONFIG.tagline} — your identity stays anonymous to students and teachers.</span>
+                <div style="margin-top: 1rem">
+                    <a href="#/developer/login" class="nav-link" style="font-size: .8rem; text-decoration: underline;">Developer Portal</a>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                This website is created by Yatharth Pandey
             </div>
         </footer>
     `;

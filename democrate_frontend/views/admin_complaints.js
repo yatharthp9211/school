@@ -48,6 +48,16 @@ export const AdminComplaintsView = {
                             <option value="text-desc">Complaint (Z to A)</option>
                         </select>
                     </div>
+                    <div class="field" style="min-width:160px">
+                        <label class="label" for="f-class-group">Class Group</label>
+                        <select class="select" id="f-class-group">
+                            <option value="">All class groups</option>
+                            <option value="pre-primary">Pre-primary</option>
+                            <option value="primary">Primary</option>
+                            <option value="upper-primary">Upper primary</option>
+                            <option value="secondary">Secondary</option>
+                        </select>
+                    </div>
                     <div class="field" style="flex:1;min-width:200px">
                         <label class="label" for="f-q">Search</label>
                         <input class="input" id="f-q" type="search" placeholder="Search text or ID…">
@@ -91,12 +101,14 @@ export const AdminComplaintsView = {
             try {
                 const status = document.getElementById('f-status')?.value;
                 const category = document.getElementById('f-category')?.value;
+                const classGroup = document.getElementById('f-class-group')?.value;
 
-                if (status || category) {
-                    all = await api.adminGetComplaints({ limit: 200, status, category });
-                } else {
-                    all = await api.adminGetComplaints({ limit: 200 });
-                }
+                let params = { limit: 200 };
+                if (status) params.status = status;
+                if (category) params.category = category;
+                if (classGroup) params.class_group = classGroup;
+
+                all = await api.adminGetComplaints(params);
                 reRender();
             } catch (err) {
                 list.innerHTML = Empty(err.message || 'Could not load complaints.', 'error');
