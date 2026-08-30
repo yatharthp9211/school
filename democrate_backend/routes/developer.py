@@ -7,6 +7,7 @@ import json
 
 import models
 import audit
+import server_logs
 from database import get_db
 from dependencies import get_current_active_developer, client_ip
 
@@ -207,3 +208,26 @@ def system_stats(
         stats["complaints"]["by_status"][status.value] = count
 
     return stats
+
+
+@router.get("/logs")
+def get_server_logs(
+    last: int = 200,
+    current_user: models.User = Depends(get_current_active_developer),
+):
+    """Return the most recent server log lines from the in-memory ring buffer."""
+    last = min(max(last, 1), 2000)
+    return {"lines": server_logs.get_lines(last)}
+
+
+@router.delete("/logs")
+def clear_server_logs(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_developer),
+):
+    """Clear the in-memory log buffer."""
+    server_logs.clear()
+    audit.log_action(db, current_user.id, "developer_logs_cleared",
+                     target="server_logs", ip=client_ip(request))
+    return {"message": "Log buffer cleared."}

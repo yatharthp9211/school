@@ -392,5 +392,13 @@ export const api = {
 
     },
 
+    async developerLogs(last = 200) {
+        return fetchApi(`${API.DEVELOPER_LOGS}?last=${last}`);
+    },
+
+    async developerClearLogs() {
+        return fetchApi(API.DEVELOPER_LOGS, { method: 'DELETE' });
+    },
+
 };
 

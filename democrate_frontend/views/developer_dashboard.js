@@ -64,6 +64,37 @@ export const DeveloperDashboardView = {
 
                 <div class="card card-padded" style="margin-top:2rem">
                     <div class="flex justify-between items-center" style="margin-bottom:1rem">
+                        <h2 class="display" style="font-size:1.2rem">
+                            <span class="material-symbols-outlined" style="vertical-align:middle;font-size:1.3rem;color:var(--color-gold)">terminal</span>
+                            Server Logs
+                        </h2>
+                        <div class="flex gap-2">
+                            <label class="small muted" style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
+                                <input type="checkbox" id="log-auto-refresh" checked>
+                                Auto-refresh
+                            </label>
+                            <button class="btn btn-soft btn-sm" id="btn-refresh-logs">Refresh</button>
+                            <button class="btn btn-danger btn-sm" id="btn-clear-logs">Clear</button>
+                        </div>
+                    </div>
+                    <div id="server-logs-container"
+                         style="background:var(--color-ink,#1B2530);color:#d4d4d4;font-family:'Fira Code','Cascadia Code',monospace;font-size:.75rem;line-height:1.6;padding:1rem;border-radius:var(--radius-lg,12px);max-height:500px;overflow-y:auto;white-space:pre-wrap;word-break:break-all">
+                        <span class="muted">Loading logs…</span>
+                    </div>
+                    <div class="flex justify-between items-center" style="margin-top:.5rem">
+                        <span class="small muted" id="log-count-label"></span>
+                        <select id="log-level-filter" class="input" style="width:auto;padding:.25rem .5rem;font-size:.75rem">
+                            <option value="ALL">All levels</option>
+                            <option value="ERROR">ERROR only</option>
+                            <option value="WARNING">WARNING+</option>
+                            <option value="INFO">INFO+</option>
+                            <option value="DEBUG">DEBUG+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card card-padded" style="margin-top:2rem">
+                    <div class="flex justify-between items-center" style="margin-bottom:1rem">
                         <h2 class="display" style="font-size:1.2rem">Audit Log</h2>
                         <button class="btn btn-soft btn-sm" id="btn-load-audit">Refresh Audit</button>
                     </div>
@@ -117,6 +148,90 @@ export const DeveloperDashboardView = {
             sqlInput.value = 'SELECT id, name, role, is_active FROM users LIMIT 50;';
             document.getElementById('btn-run-query').click();
         });
+
+        // ---- Server Logs ----
+        const logsContainer = document.getElementById('server-logs-container');
+        const logCountLabel = document.getElementById('log-count-label');
+        const logLevelFilter = document.getElementById('log-level-filter');
+        const autoRefreshCheckbox = document.getElementById('log-auto-refresh');
+        let logRefreshTimer = null;
+        let _allLogLines = [];
+
+        const LEVEL_PRIORITY = { DEBUG: 0, INFO: 1, WARNING: 2, ERROR: 3, CRITICAL: 4 };
+        const LEVEL_COLORS = {
+            ERROR: '#f87171', CRITICAL: '#f87171',
+            WARNING: '#fbbf24',
+            INFO: '#93c5fd',
+            DEBUG: '#9ca3af',
+        };
+
+        function renderLogs() {
+            const filter = logLevelFilter?.value || 'ALL';
+            const minPrio = filter === 'ALL' ? -1 : (LEVEL_PRIORITY[filter] ?? 0);
+            const filtered = _allLogLines.filter(l => (LEVEL_PRIORITY[l.level] ?? 0) >= minPrio);
+
+            if (!filtered.length) {
+                logsContainer.innerHTML = '<span style="color:#6b7280">No log entries.</span>';
+                logCountLabel.textContent = '';
+                return;
+            }
+
+            const html = filtered.map(l => {
+                const color = LEVEL_COLORS[l.level] || '#d4d4d4';
+                const ts = l.ts ? l.ts.replace('T', ' ').slice(0, 19) : '';
+                const lvl = (l.level || '').padEnd(8);
+                return `<span style="color:#6b7280">${esc(ts)}</span>  <span style="color:${color};font-weight:${l.level === 'ERROR' || l.level === 'CRITICAL' ? '700' : '400'}">${esc(lvl)}</span>  ${esc(l.msg || '')}`;
+            }).join('\n');
+
+            logsContainer.innerHTML = html;
+            logCountLabel.textContent = `${filtered.length} of ${_allLogLines.length} entries`;
+
+            // Auto-scroll to bottom
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        async function fetchLogs() {
+            try {
+                const res = await api.developerLogs(500);
+                _allLogLines = res.lines || [];
+                renderLogs();
+            } catch (err) {
+                logsContainer.innerHTML = `<span style="color:#f87171">Failed to load logs: ${esc(err.message)}</span>`;
+            }
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            logRefreshTimer = setInterval(fetchLogs, 5000); // every 5 seconds
+        }
+        function stopAutoRefresh() {
+            if (logRefreshTimer) { clearInterval(logRefreshTimer); logRefreshTimer = null; }
+        }
+
+        document.getElementById('btn-refresh-logs')?.addEventListener('click', fetchLogs);
+        document.getElementById('btn-clear-logs')?.addEventListener('click', async () => {
+            try {
+                await api.developerClearLogs();
+                _allLogLines = [];
+                renderLogs();
+                showToast('Log buffer cleared.');
+            } catch (err) {
+                showToast(err.message || 'Failed to clear logs.', 'error');
+            }
+        });
+        logLevelFilter?.addEventListener('change', renderLogs);
+        autoRefreshCheckbox?.addEventListener('change', () => {
+            if (autoRefreshCheckbox.checked) startAutoRefresh();
+            else stopAutoRefresh();
+        });
+
+        fetchLogs(); // initial load
+        if (autoRefreshCheckbox?.checked) startAutoRefresh();
+
+        // Cleanup timer when navigating away
+        const _origHashChange = window.onhashchange;
+        const cleanup = () => { stopAutoRefresh(); window.removeEventListener('hashchange', cleanup); };
+        window.addEventListener('hashchange', cleanup);
 
         const loadAudit = async () => {
             const container = document.getElementById('audit-table-container');
