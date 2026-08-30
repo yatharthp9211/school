@@ -82,9 +82,8 @@ export const AdminDashboardView = {
                     </div>
                 </header>
 
-                <section class="grid grid-cols-2 md:grid-cols-4 gap-4" style="margin-top:1.5rem" aria-label="System stats">
+                <section class="grid grid-cols-2 md:grid-cols-3 gap-4" style="margin-top:1.5rem" aria-label="System stats">
                     ${Stat(all.length, 'Total complaints')}
-                    ${Stat(pending, 'Pending')}
                     ${Stat(flagged.length, 'Flagged for review')}
                     ${Stat(resolved, 'Resolved')}
                 </section>

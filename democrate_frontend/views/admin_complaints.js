@@ -4,7 +4,7 @@ import { api } from '../js/api.js?v=18';
 import { Auth } from '../js/auth.js?v=18';
 import { Navbar, ComplaintCard, Empty, esc, Unauthorized, filterAndSortComplaints } from '../js/components.js?v=18';
 
-const STATUSES = ['', 'pending', 'published', 'flagged', 'moderated', 'resolved', 'archived'];
+const STATUSES = ['', 'published', 'flagged', 'moderated', 'resolved'];
 
 export const AdminComplaintsView = {
     render: async () => {
