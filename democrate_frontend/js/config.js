@@ -37,7 +37,7 @@ export const CONFIG = {
 
     // Status groupings used across dashboards (one source of truth).
     statusGroups: {
-        LIVE: ["published", "voting"],
+        LIVE: ["published"],
         PENDING: ["pending", "moderated"],
         RESOLVED: ["resolved"],
         ARCHIVED: ["archived"],
