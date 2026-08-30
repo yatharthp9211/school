@@ -191,6 +191,11 @@ def get_all_complaints(
     q = db.query(models.Complaint).order_by(models.Complaint.created_at.desc())
     if status:
         q = q.filter(models.Complaint.status == status.lower())
+    else:
+        q = q.filter(models.Complaint.status.notin_([
+            models.ComplaintStatus.PENDING,
+            models.ComplaintStatus.ARCHIVED
+        ]))
     if category:
         q = q.filter(models.Complaint.category == category)
     if class_group:
