@@ -99,7 +99,8 @@ async function fetchApi(url, options = {}) {
 
             // ones a view's try/catch happens to rethrow.
 
-            router.navigate(`/login/${role}`);
+            const loginPath = role === 'developer' ? '/developer/login' : `/login/${role}`;
+            router.navigate(loginPath);
 
             const err = new Error('Your session has expired. Please sign in again.');
 
