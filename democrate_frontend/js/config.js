@@ -89,6 +89,7 @@ export const API = {
     DEVELOPER_AUDIT: `${API_BASE}/developer/audit`,
     DEVELOPER_USERS: `${API_BASE}/developer/users`,
     DEVELOPER_STATS: `${API_BASE}/developer/stats`,
+    DEVELOPER_LOGS: `${API_BASE}/developer/logs`,
 };
 
 // Initialize Tailwind config globally (fallback for utility classes; the

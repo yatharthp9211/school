@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 import logging
+import server_logs
 
 class EndpointFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
@@ -18,6 +19,7 @@ from dependencies import auth_limiter, general_limiter, client_ip
 from routes import auth, complaints, leaderboard, ratings, admin, developer, teachers
 
 app = FastAPI(title=settings.PROJECT_NAME)
+server_logs.install()
 
 # CORS — env-driven list of allowed origins (defaults cover local dev).
 origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
