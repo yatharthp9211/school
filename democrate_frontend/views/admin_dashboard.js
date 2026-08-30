@@ -41,7 +41,7 @@ export const AdminDashboardView = {
             ? flagged.map((entry) => FlaggedCard(entry)).join('')
             : Empty('No complaints currently flagged for review.', 'verified');
 
-        const recentCards = all.slice(0, 6).map((c) => ComplaintCard(c, 'admin', user.id)).join('');
+        const recentCards = all.filter(c => (c.status || '').toLowerCase() !== 'pending').slice(0, 6).map((c) => ComplaintCard(c, 'admin', user.id)).join('');
 
         const falseList = falseEntries.length
             ? falseEntries.map((entry) => {
