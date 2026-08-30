@@ -30,7 +30,7 @@ router.addRoute('/complaints', () => import(`../views/complaints_list.js?v=${V}`
 router.addRoute('/leaderboard', () => import(`../views/leaderboard.js?v=${V}`).then((m) => m.LeaderboardView), { requiresAuth: true });
 router.addRoute('/ratings', () => import(`../views/ratings.js?v=${V}`).then((m) => m.RatingsView), { requiresAuth: true, role: 'student' });
 router.addRoute('/profile', () => import(`../views/profile.js?v=${V}`).then((m) => m.ProfileView), { requiresAuth: true });
-router.addRoute('/login/developer', () => import(`../views/developer_login.js?v=${V}`).then((m) => m.DeveloperLoginView));
+router.addRoute('/developer/login', () => import(`../views/developer_login.js?v=${V}`).then((m) => m.DeveloperLoginView));
 router.addRoute('/developer', () => import(`../views/developer_dashboard.js?v=${V}`).then((m) => m.DeveloperDashboardView), { requiresAuth: true, role: 'developer' });
 
 // ---------------------------------------------------------------------------
