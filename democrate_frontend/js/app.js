@@ -3,7 +3,7 @@ import { router } from './router.js?v=18';
 import { loadSession, loadTheme, toggleTheme, logout as stateLogout } from './state.js?v=18';
 import { Auth } from './auth.js?v=18';
 import { api } from './api.js?v=18';
-import { showToast } from './components.js?v=18';
+import { showToast, showPrivacyPolicy } from './components.js?v=18';
 
 // ---------------------------------------------------------------------------
 // Routes — views are lazy-loaded via dynamic import (code-split per route)
@@ -93,6 +93,11 @@ document.addEventListener('click', async (e) => {
         case 'close-drawer':
             e.preventDefault();
             closeDrawer();
+            break;
+
+        case 'privacy-policy':
+            e.preventDefault();
+            showPrivacyPolicy();
             break;
 
         case 'logout':

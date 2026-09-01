@@ -131,3 +131,33 @@ Generated: August 21, 2026
 * Live Browser Validation:
   - Live site `https://yatharthpandey.dpdns.org` audited via browser subagent: verified landing, responsive drawer, student/teacher logins, dashboard views, and immediate logout.
 ================================================================================
+# Democrate Development Update: 2026-08-29
+
+## Overview
+Today's development session focused on implementing class-specific routing, upgrading backend user authentication mechanisms, performing comprehensive testing on the E2E flow, and migrating database schemas for a Termux production environment.
+
+## 1. Schema & Models Refactoring
+- **Users Table Enhancements**: Expanded the SQLite `users` table via SQLAlchemy to incorporate class roster filtering.
+  - Added `class_name` (`VARCHAR`, default: `NA`)
+  - Added `section_name` (`VARCHAR`, default: `NA`)
+  - Added `subject` (`VARCHAR`, default: `NA`)
+  - Added `is_class_teacher` (`BOOLEAN`, default: `0`)
+  - Added `tokens_valid_after` (`DATETIME`, for auth revocation hardening).
+- **Complaints Table Update**: Added a `class_group` column to allow sorting or aggregating complaints based on generic groups (e.g., primary, secondary).
+- **Enums implementation**: Established strict validation logic inside `schemas.py` using predefined arrays for generic allowed choices (`ALLOWED_CLASSES`, `ALLOWED_SECTIONS`, `ALLOWED_SUBJECTS`).
+
+## 2. Frontend UI Enhancements
+- Updated **Registration Flow**: Included dynamic inputs to handle class specifics.
+- **Teacher Dashboard UI**: Remodelled the UI logic in `teacher_dashboard.js` to parse whether a logged-in user is a class teacher or subject teacher, and displayed specific dropdown options accordingly.
+- Cleaned up the input styling to be less "blocky" globally by unifying them under an `input` CSS class across various views. 
+- Integrated custom footer attributions pointing to the project's creator on the bottom right of the main layouts.
+
+## 3. End-to-End Test Reliability (`_verify_e2e.py`)
+- Resolved issues causing the E2E verification to fail during the **Developer Authentication (2FA)** step by fixing the JWT parsing flow so that actual API cookies were used instead of dummy JSON string returns.
+- Patched **T3 Assertions** to allow the test framework to smoothly accept our newly added fields (`is_class_teacher`, `class_name`, etc.) in standard login payload returns.
+- Included artificial `time.sleep` timeouts specifically around `time.sleep(1)` inside moderation loops and a larger `time.sleep(61)` before account discipline tests to actively bypass and reset the rate-limiter logic on the server during automated testing.
+
+## 4. Source Control & Server Deployment
+- Cleaned up the repository by actively `git rm --cached`ing SQLite `.db-shm` and `.db-wal` temporary logs to prevent git pollution.
+- Re-merged local adjustments in the `mk2` branch directly into the main repository tree (`master`).
+- Provided step-by-step documentation for deploying on Termux via `git pull origin master`, directly applying standard `ALTER TABLE` SQLite transformations on `democrate.db` to prevent `sqlite3.OperationalError: no such column` server crashes, and copying the frontend dist files into the standard NGINX configuration directory.

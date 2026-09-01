@@ -57,6 +57,7 @@ export function LoginView(role) {
                             <span class="field-error-text" id="form-error" role="alert"></span>
                             <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">Sign in</button>
                             ${registerHref ? `<p class="small muted" style="text-align:center">New here? <a href="${registerHref}">Create an account</a></p>` : ''}
+                            <p class="small muted" style="text-align:center; margin-top:.2rem"><a href="#" data-action="privacy-policy">Privacy Policy</a></p>
                         </form>
                     </div>
                 </main>

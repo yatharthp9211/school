@@ -389,3 +389,54 @@ export function Footer() {
         </footer>
     `;
 }
+
+// ---------------------------------------------------------------------------
+// Privacy Policy Modal
+// ---------------------------------------------------------------------------
+
+export function showPrivacyPolicy() {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'card card-padded animate-scale-in';
+    dialog.style.maxWidth = '600px';
+    dialog.style.width = '90vw';
+    dialog.style.border = 'none';
+    dialog.style.borderRadius = '12px';
+    dialog.style.padding = '0';
+    dialog.style.boxShadow = '0 10px 40px rgba(0,0,0,0.2)';
+    dialog.style.background = 'var(--color-surface)';
+    dialog.style.color = 'var(--color-ink)';
+    
+    dialog.innerHTML = `
+        <div style="padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--color-hairline);">
+            <h2 class="display" style="font-size:1.5rem; margin: 0;">Privacy Policy</h2>
+        </div>
+        <div style="padding: 1.5rem; font-size: 0.95rem; line-height: 1.6; max-height: 60vh; overflow-y: auto;">
+            <p><strong>1. Data Collection:</strong> We collect your name, class details, and encrypted passwords solely for authentication and school grievance resolution.</p>
+            <p style="margin-top:.8rem"><strong>2. Anonymity:</strong> Complaints are anonymized by default. Your identity is hidden from students and teachers. It is only revealed to administrators if a complaint is flagged by votes or marked as false.</p>
+            <p style="margin-top:.8rem"><strong>3. Usage:</strong> Your data is used exclusively to maintain a safe school environment and will never be shared with third parties.</p>
+            <p style="margin-top:.8rem"><strong>4. Accountability:</strong> Malicious or false complaints may lead to account restrictions as determined by school administrators. Voting does not reveal your identity.</p>
+        </div>
+        <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--color-hairline); text-align: right; background: var(--color-surface-sunken);">
+            <button class="btn btn-primary" id="close-privacy-btn">I Understand</button>
+        </div>
+    `;
+    document.body.appendChild(dialog);
+    
+    const closeBtn = dialog.querySelector('#close-privacy-btn');
+    closeBtn.addEventListener('click', () => {
+        dialog.close();
+        dialog.remove();
+    });
+    
+    dialog.addEventListener('click', (e) => {
+        const rect = dialog.getBoundingClientRect();
+        const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+                            rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+        if (!isInDialog) {
+            dialog.close();
+            dialog.remove();
+        }
+    });
+
+    dialog.showModal();
+}
