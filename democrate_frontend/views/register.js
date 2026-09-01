@@ -257,6 +257,7 @@ function studentForm() {
             <span class="field-error-text" id="form-error" role="alert"></span>
             <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">Create account</button>
             <p class="small muted" style="text-align:center">Already registered? <a href="#/login/student">Sign in</a></p>
+            <p class="small muted" style="text-align:center; margin-top:.2rem"><a href="#" data-action="privacy-policy">Privacy Policy</a></p>
         </form>
     `;
 }
@@ -296,6 +297,7 @@ function teacherForm() {
             <span class="field-error-text" id="form-error" role="alert"></span>
             <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">Create teacher account</button>
             <p class="small muted" style="text-align:center">Already registered? <a href="#/login/teacher">Sign in</a></p>
+            <p class="small muted" style="text-align:center; margin-top:.2rem"><a href="#" data-action="privacy-policy">Privacy Policy</a></p>
         </form>
     `;
 }
