@@ -415,6 +415,7 @@ export function showPrivacyPolicy() {
             <p style="margin-top:.8rem"><strong>2. Anonymity:</strong> Complaints are anonymized by default. Your identity is hidden from students and teachers. It is only revealed to administrators if a complaint is flagged by votes or marked as false.</p>
             <p style="margin-top:.8rem"><strong>3. Usage:</strong> Your data is used exclusively to maintain a safe school environment and will never be shared with third parties.</p>
             <p style="margin-top:.8rem"><strong>4. Accountability:</strong> Malicious or false complaints may lead to account restrictions as determined by school administrators. Voting does not reveal your identity.</p>
+            <p style="margin-top:.8rem"><strong>5. Local Storage:</strong> We use strictly necessary local storage only to keep you securely logged in and to remember your theme preference. We do not use tracking or advertising cookies.</p>
         </div>
         <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--color-hairline); text-align: right; background: var(--color-surface-sunken);">
             <button class="btn btn-primary" id="close-privacy-btn">I Understand</button>
