@@ -58,9 +58,14 @@ nginx
 
 **Start FastAPI (Backend):**
 ```bash
-cd ../democrate_backend
+cd ~/school/democrate_backend
 source venv/bin/activate
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips="*"
+```
+
+**Start Cloudflare Tunnel (To expose it to the internet):**
+```bash
+cloudflared tunnel --url http://127.0.0.1:8080 run --token eyJhIjoiOTE2MDFiZGRlNzZiMDYwMTZlNDI1NGRiZTczZWYwOGIiLCJzIjoiRnd0T1FSRzR6N2FFTFZTRi8xczJmenhpODJtdllqdVpSYnIwd054YVRCST0iLCJ0IjoiNmEzN2VhYjEtMzFmZC00ZjhhLWI4ZjYtNTQ1MjQ1MjU5MGNiIn0=
 ```
 
 ## Troubleshooting Past Issues
