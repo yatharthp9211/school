@@ -161,3 +161,24 @@ Today's development session focused on implementing class-specific routing, upgr
 - Cleaned up the repository by actively `git rm --cached`ing SQLite `.db-shm` and `.db-wal` temporary logs to prevent git pollution.
 - Re-merged local adjustments in the `mk2` branch directly into the main repository tree (`master`).
 - Provided step-by-step documentation for deploying on Termux via `git pull origin master`, directly applying standard `ALTER TABLE` SQLite transformations on `democrate.db` to prevent `sqlite3.OperationalError: no such column` server crashes, and copying the frontend dist files into the standard NGINX configuration directory.
+
+---
+
+## Recent Updates (Push Notifications & Termux Stabilization)
+
+### 1. Web Push Notifications
+- Integrated a fully functional **Push Notification** system across the frontend and backend.
+- Added `pywebpush` to the backend to generate and handle VAPID keys securely via `.env`.
+- Added the `PushSubscription` model to `models.py` to store individual user endpoints and P256DH keys.
+- Registered a dedicated Service Worker (`sw.js`) on the frontend to listen for incoming push events in the background and display native device notifications.
+
+### 2. Termux Production Guides
+- **`setup_termux.md`**: Authored a comprehensive setup guide for installing Python, Rust, and C-compilers on Termux to successfully build wheels for `maturin`, `pydantic-core`, and `cryptography` without errors.
+- **`startup.md`**: Completely overhauled the startup documentation. Replaced the old `python -m http.server` commands with a robust production stack consisting of **Nginx** (serving static frontend files), **Uvicorn** (backend proxy), and **Cloudflared** (tunneling the local Nginx instance to the public web).
+- Documented Nginx reverse-proxy configuration to correctly route `/api/v1` requests from Nginx port 8080 to the FastAPI backend on port 8000.
+
+### 3. Critical Bug Fixes
+- **Bcrypt / Passlib Crash**: Resolved the `ValueError: password cannot be longer than 72 bytes` and `AttributeError: module 'bcrypt' has no attribute '__about__'` bugs. Explicitly pinned `bcrypt==3.2.2` in `requirements.txt` to bypass an unpatched compatibility bug in `passlib`.
+- **Missing Alembic Migration**: Detected that `class_name`, `section_name`, and `subject` columns were missing from the database on fresh installs. Manually wrote and committed a new Alembic migration (`a170e5e73ced_add_user_classification_columns.py`) using SQLite's `batch_alter_table` to guarantee seamless upgrades.
+- **`seed.py` Legacy Refactor**: Fixed `seed.py` crashes caused by attempting to insert into the deprecated `details` column. Rewrote the seeding logic to properly populate the `subject` column for teacher accounts.
+- **Legacy Database Support**: Provided manual `sqlite3` fallback scripts directly in the troubleshooting guides to allow users upgrading from older versions to manually inject the new `push_subscriptions` table without losing their existing database records.
