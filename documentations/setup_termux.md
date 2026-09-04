@@ -47,7 +47,16 @@ pip install -r requirements.txt
 ```
 *(Note: Compiling `cryptography` and `pydantic-core` might take 5-15 minutes on a phone CPU. Let it run without interrupting).*
 
-## 6. Setup Nginx (Frontend)
+## 6. Configure Environment Variables (.env)
+You need to set up the `.env` file for the backend with your secrets (JWT, Teacher Key, Developer Key, and VAPID keys for push notifications).
+```bash
+cd ~/school/democrate_backend
+cp .env.example .env
+nano .env
+```
+*(Fill in your actual secrets, save and exit).*
+
+## 7. Setup Nginx (Frontend)
 Copy the frontend files to the default Termux Nginx HTML directory:
 ```bash
 cd ../democrate_frontend
@@ -55,7 +64,7 @@ mkdir -p $PREFIX/share/nginx/html
 cp -r * $PREFIX/share/nginx/html/
 ```
 
-## 7. Run the Servers
+## 8. Run the Servers
 
 **Start Nginx (Frontend):**
 ```bash
