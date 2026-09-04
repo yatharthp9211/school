@@ -56,10 +56,16 @@ cp -r * $PREFIX/share/nginx/html/
 nginx
 ```
 
-**Start FastAPI (Backend):**
+**Seed the Database (Admin & Developer Accounts):**
+Since this is a fresh setup, you need to create the default database and the initial admin/developer credentials:
 ```bash
 cd ~/school/democrate_backend
 source venv/bin/activate
+python seed.py
+```
+
+**Start FastAPI (Backend):**
+```bash
 uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips="*"
 ```
 
