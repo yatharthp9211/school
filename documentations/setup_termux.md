@@ -35,6 +35,12 @@ source venv/bin/activate
 ## 5. Install Python Packages
 To prevent the `maturin` and `pydantic` errors from recurring, we must first upgrade the build tools before running the main installation.
 ```bash
+# 1. Set the Android API Level (24 is standard for Termux, but 26+ matches modern devices)
+export ANDROID_API_LEVEL=24
+
+# 2. Set the target architecture variable that Maturin also looks for
+export CARGO_BUILD_TARGET=$(rustc -Vv | grep host | cut -d ' ' -f2)
+
 pip install --upgrade pip wheel setuptools
 pip install maturin
 pip install -r requirements.txt
