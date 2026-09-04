@@ -235,17 +235,6 @@ def create_vote(
 ) -> models.Vote:
     """Insert a vote atomically. The UNIQUE(complaint_id, user_id) constraint is
     the final authority against duplicate votes (race-safe)."""
-    existing = (
-        db.query(models.Vote)
-        .filter(
-            models.Vote.complaint_id == complaint.id,
-            models.Vote.user_id == user.id,
-        )
-        .first()
-    )
-    if existing:
-        raise DuplicateVoteError()
-
     db_vote = models.Vote(
         complaint_id=complaint.id,
         user_id=user.id,

@@ -49,7 +49,4 @@ if test_user_ids:
 else:
     print("nothing to clean.")
 
-# Reset the author discipline counters on the legit accounts (test ran before).
-for uid in ("e2e_student",):
-    pass
 db.close()

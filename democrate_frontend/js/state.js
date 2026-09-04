@@ -8,24 +8,8 @@ export const state = {
     user: null,          // { id, name, role }
     token: null,
     theme: 'light',
-    complaints: [],      // current list shown by the active view
-    leaderboard: null,   // cached leaderboard (refreshed on mount)
     currentView: null,
 };
-
-const listeners = [];
-export function subscribe(listener) {
-    listeners.push(listener);
-    return () => {
-        const i = listeners.indexOf(listener);
-        if (i > -1) listeners.splice(i, 1);
-    };
-}
-function notify() {
-    listeners.forEach((fn) => {
-        try { fn(state); } catch (e) { console.error(e); }
-    });
-}
 
 // --- Session ---
 export function setSession(token, user) {
@@ -34,7 +18,7 @@ export function setSession(token, user) {
     state.token = "cookie-auth"; // Dummy token to satisfy legacy checks
     state.user = user;
     try { localStorage.setItem(SESSION_KEY, JSON.stringify({ user })); } catch (e) { /* private mode */ }
-    notify();
+
 }
 
 export function loadSession() {
@@ -55,15 +39,8 @@ export function loadSession() {
 export function logout() {
     state.token = null;
     state.user = null;
-    state.complaints = [];
     try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
-    notify();
-}
 
-// --- Data cache (short-lived; refreshed on mount) ---
-export function setLeaderboard(leaderboard) {
-    state.leaderboard = leaderboard;
-    notify();
 }
 
 export function setView(viewName) {
@@ -76,7 +53,7 @@ function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.classList.toggle('dark', theme === 'dark');
     try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* ignore */ }
-    notify();
+
 }
 
 export function loadTheme() {

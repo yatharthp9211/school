@@ -26,12 +26,6 @@ TEACHERS = [
     {"id": "T-103", "name": "Ms. Gupta", "subject": "English"},
 ]
 
-# Known weak/default values seed.py refuses to assign to the admin account.
-_WEAK_PASSWORDS = {
-    "democrate", "democrate@2026", "democrate2026", "admin", "admin123",
-    "password", "password123", "12345678", "teacher", "school", "abc12345",
-}
-
 
 def _upsert_user(user_id, name, role, password, details=None) -> bool:
     existing = db.query(User).filter(User.id == user_id).first()
@@ -57,9 +51,6 @@ def seed_admin():
         return
     if len(password) < 8:
         print("SKIP admin: DEMOCRATE_ADMIN_PASSWORD must be at least 8 characters.")
-        return
-    if password.lower() in _WEAK_PASSWORDS:
-        print("SKIP admin: DEMOCRATE_ADMIN_PASSWORD is a known weak/default value. Choose a strong password.")
         return
     created = _upsert_user(user, "System Administrator", Role.ADMIN, password, "System Administrator")
     print(f"Admin '{user}': {'created' if created else 'already exists'}")
@@ -93,9 +84,6 @@ def seed_developer():
         return
     if len(password) < 8:
         print("SKIP developer: DEMOCRATE_DEVELOPER_PASSWORD must be at least 8 characters.")
-        return
-    if password.lower() in _WEAK_PASSWORDS:
-        print("SKIP developer: DEMOCRATE_DEVELOPER_PASSWORD is a known weak/default value. Choose a strong password.")
         return
     created = _upsert_user(user, "System Developer", Role.DEVELOPER, password, "System Developer")
     print(f"Developer '{user}': {'created' if created else 'already exists'}")

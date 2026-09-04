@@ -31,7 +31,13 @@ ALLOWED_SECTIONS = [
 ]
 
 
-class _PasswordMixin:
+class RegisterStudent(BaseModel):
+    id: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
+    name: str = Field(min_length=1, max_length=80)
+    password: str
+    class_name: str
+    section_name: str
+
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
@@ -42,14 +48,6 @@ class _PasswordMixin:
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one number")
         return v
-
-
-class RegisterStudent(BaseModel, _PasswordMixin):
-    id: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
-    name: str = Field(min_length=1, max_length=80)
-    password: str
-    class_name: str
-    section_name: str
 
     @field_validator("class_name")
     @classmethod
@@ -66,7 +64,7 @@ class RegisterStudent(BaseModel, _PasswordMixin):
         return v
 
 
-class RegisterTeacher(BaseModel, _PasswordMixin):
+class RegisterTeacher(BaseModel):
     id: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_-]+$")
     name: str = Field(min_length=1, max_length=80)
     password: str
@@ -76,6 +74,17 @@ class RegisterTeacher(BaseModel, _PasswordMixin):
     section_name: str = "NA"
     photo: Optional[str] = None  # data URL
     registration_key: str = Field(min_length=1)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        if not any(c.isalpha() for c in v):
+            raise ValueError("Password must contain at least one letter")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one number")
+        return v
 
     @field_validator("subject")
     @classmethod
@@ -117,8 +126,7 @@ class UserResponse(BaseModel):
     subject: str = "NA"
     is_class_teacher: bool = False
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class ProfileUpdate(BaseModel):
@@ -254,5 +262,4 @@ class RatingResponse(BaseModel):
     tags: Optional[str]
     timestamp: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
