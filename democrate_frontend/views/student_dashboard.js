@@ -2,6 +2,7 @@
 import { CONFIG } from '../js/config.js?v=18';
 import { api } from '../js/api.js?v=18';
 import { Auth } from '../js/auth.js?v=18';
+import { router } from '../js/router.js?v=18';
 import { Navbar, ComplaintCard, Empty, Stat, Footer, esc, Unauthorized } from '../js/components.js?v=18';
 
 export const StudentDashboardView = {
@@ -50,4 +51,15 @@ export const StudentDashboardView = {
             ${Footer()}
         `;
     },
+
+    init() {
+        // Abort previous listener if init() fires again (view re-rendered).
+        if (StudentDashboardView._pushCtrl) StudentDashboardView._pushCtrl.abort();
+        const ctrl = new AbortController();
+        StudentDashboardView._pushCtrl = ctrl;
+        window.addEventListener('message', (e) => {
+            if (e.data?.type === 'complaint_update') router.refresh();
+        }, { signal: ctrl.signal });
+    },
 };
+StudentDashboardView._pushCtrl = null;

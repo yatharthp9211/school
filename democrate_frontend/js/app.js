@@ -11,7 +11,7 @@ import { showToast, showPrivacyPolicy } from './components.js?v=18';
 // ---------------------------------------------------------------------------
 // ?v=N busts the browser's module cache so view updates always take effect.
 // Bump the suffix whenever view files change.
-const V = 18;
+const V = 20;
 
 router.addRoute('/', () => import(`../views/landing.js?v=${V}`).then((m) => m.LandingView));
 router.addRoute('/login/student', () => import(`../views/login.js?v=${V}`).then((m) => m.LoginView('student')));
@@ -201,10 +201,53 @@ document.addEventListener('click', async (e) => {
 });
 
 // ---------------------------------------------------------------------------
+// Web Push setup — enhancement only; all failures are silent
+// ---------------------------------------------------------------------------
+function urlBase64ToUint8Array(base64) {
+    const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+    const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(b64);
+    return new Uint8Array([...raw].map((c) => c.charCodeAt(0)));
+}
+
+function arrayBufferToBase64Url(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let str = '';
+    bytes.forEach((b) => (str += String.fromCharCode(b)));
+    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function setupPush() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    const reg = await navigator.serviceWorker.register('/sw.js');
+
+    // Only subscribe when signed in and the user consents to notifications.
+    if (!Auth.isLoggedIn() || Notification.permission !== 'granted') {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted' || !Auth.isLoggedIn()) return;
+    }
+
+    // Guard against https-only PushManager (localhost is treated as secure).
+    if (!window.isSecureContext) return;
+
+    const { public_key } = await api.getVapidKey();
+    const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(public_key),
+    });
+    await api.subscribePush(
+        sub.endpoint,
+        arrayBufferToBase64Url(sub.getKey('p256dh')),
+        arrayBufferToBase64Url(sub.getKey('auth')),
+    );
+}
+
+// ---------------------------------------------------------------------------
 // Bootstrap
 // ---------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
     loadTheme();
     loadSession();
+    setupPush().catch(() => {}); // notifications are optional, never block startup
     router.init('app');
 });

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 import models
@@ -13,6 +13,7 @@ from dependencies import (
     get_current_active_teacher,
     client_ip,
 )
+from routes.notifications import send_push
 
 router = APIRouter()
 
@@ -36,6 +37,7 @@ def _serialize_complaints(complaints: List[models.Complaint], user_id: str) -> L
 def create_complaint(
     complaint_in: schemas.ComplaintCreate,
     request: Request,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_student),
 ):
@@ -62,6 +64,15 @@ def create_complaint(
     audit.log_action(db, current_user.id, audit.COMPLAINT_CREATED, target=complaint.id,
                      details=f"category={complaint.category} private={complaint.is_private}",
                      ip=client_ip(request))
+
+    # Assigned teachers learn of new work without polling the feed.
+    if complaint.verifier_teacher:
+        background_tasks.add_task(
+            send_push, complaint.verifier_teacher,
+            "New complaint awaiting review",
+            "A student submitted a complaint assigned to you.",
+            type="complaint_update",
+        )
     return _serialize_complaint(complaint, current_user.id)
 
 
@@ -159,6 +170,7 @@ def verify_complaint(
     complaint_id: str,
     verify_in: schemas.VerifyRequest,
     request: Request,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_teacher),
 ):
@@ -186,4 +198,22 @@ def verify_complaint(
         raise HTTPException(status_code=400, detail="action must be 'approve' or 'reject'")
 
     db.commit()
+
+    # Let the student know their complaint has been processed.
+    if complaint.author_id:
+        if verify_in.action == "approve":
+            background_tasks.add_task(
+                send_push, complaint.author_id,
+                "Complaint approved",
+                "Your complaint has been verified and is now public.",
+                type="complaint_update",
+            )
+        else:
+            background_tasks.add_task(
+                send_push, complaint.author_id,
+                "Complaint not approved",
+                "Your complaint was reviewed but could not be published.",
+                type="complaint_update",
+            )
+
     return {"success": True, "status": complaint.status.value}

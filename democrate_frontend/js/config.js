@@ -74,5 +74,7 @@ export const API = {
     DEVELOPER_USERS: `${API_BASE}/developer/users`,
     DEVELOPER_STATS: `${API_BASE}/developer/stats`,
     DEVELOPER_LOGS: `${API_BASE}/developer/logs`,
+    NOTIFICATIONS_SUBSCRIBE: `${API_BASE}/notifications/subscribe`,
+    NOTIFICATIONS_VAPID_KEY: `${API_BASE}/notifications/vapid-key`,
 };
 

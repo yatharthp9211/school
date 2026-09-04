@@ -27,3 +27,6 @@ Thumbs.db
 .agents/
 .claude/
 skills-lock.json
+
+# VAPID keys
+*.pem
