@@ -95,3 +95,7 @@ cloudflared tunnel --url http://127.0.0.1:8080 run --token eyJhIjoiOTE2MDFiZGRlN
 * **`Failed building wheel for pydantic-core` or `cryptography`**: This happens because `rust` wasn't installed, or `clang` (the C compiler) was missing. Step 2 completely resolves this.
 * **Notifications / VAPID Keys**: Since we added push notifications, `pywebpush` relies heavily on `cryptography`. Make sure `cryptography==43.0.1` successfully builds.
 * **Blank screen on reload**: If you pull new frontend code, make sure to run `cp -r * $PREFIX/share/nginx/html/` again and restart Nginx if you edited config files.
+* **`OperationalError: no such table: push_subscriptions`**: If you updated from an older version and don't want to delete your database, run this command inside `democrate_backend` to manually inject the table:
+  ```bash
+  sqlite3 democrate.db "CREATE TABLE push_subscriptions (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, user_id VARCHAR NOT NULL, endpoint VARCHAR NOT NULL, p256dh VARCHAR NOT NULL, auth VARCHAR NOT NULL, created_at DATETIME, FOREIGN KEY(user_id) REFERENCES users (id), CONSTRAINT uq_push_user_endpoint UNIQUE (user_id, endpoint)); CREATE INDEX ix_push_subscriptions_id ON push_subscriptions (id); CREATE INDEX ix_push_subscriptions_user_id ON push_subscriptions (user_id);"
+  ```
