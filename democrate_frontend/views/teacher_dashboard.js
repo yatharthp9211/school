@@ -3,6 +3,7 @@ import { CONFIG } from '../js/config.js?v=18';
 import { api } from '../js/api.js?v=18';
 import { Auth } from '../js/auth.js?v=18';
 import { Navbar, ComplaintCard, Empty, Stat, Footer, esc, Unauthorized } from '../js/components.js?v=18';
+import { router } from '../js/router.js?v=18';
 
 export const TeacherDashboardView = {
     render: async () => {
@@ -97,6 +98,14 @@ export const TeacherDashboardView = {
     },
     
     init: () => {
+        // Auto-refresh when a new complaint is assigned (push from student creation).
+        if (TeacherDashboardView._pushCtrl) TeacherDashboardView._pushCtrl.abort();
+        const ctrl = new AbortController();
+        TeacherDashboardView._pushCtrl = ctrl;
+        window.addEventListener('message', (e) => {
+            if (e.data?.type === 'complaint_update') router.refresh();
+        }, { signal: ctrl.signal });
+
         document.querySelectorAll('.remove-student-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if (confirm('Are you sure you want to remove this student? They will not be able to log in anymore.')) {
@@ -116,3 +125,4 @@ export const TeacherDashboardView = {
         });
     }
 };
+TeacherDashboardView._pushCtrl = null;

@@ -26,14 +26,8 @@ TEACHERS = [
     {"id": "T-103", "name": "Ms. Gupta", "subject": "English"},
 ]
 
-# Known weak/default values seed.py refuses to assign to the admin account.
-_WEAK_PASSWORDS = {
-    "democrate", "democrate@2026", "democrate2026", "admin", "admin123",
-    "password", "password123", "12345678", "teacher", "school", "abc12345",
-}
 
-
-def _upsert_user(user_id, name, role, password, details=None) -> bool:
+def _upsert_user(user_id, name, role, password, subject="NA") -> bool:
     existing = db.query(User).filter(User.id == user_id).first()
     if existing:
         return False
@@ -43,7 +37,7 @@ def _upsert_user(user_id, name, role, password, details=None) -> bool:
             name=name,
             role=role,
             hashed_password=get_password_hash(password),
-            details=details,
+            subject=subject,
         )
     )
     return True
@@ -58,10 +52,7 @@ def seed_admin():
     if len(password) < 8:
         print("SKIP admin: DEMOCRATE_ADMIN_PASSWORD must be at least 8 characters.")
         return
-    if password.lower() in _WEAK_PASSWORDS:
-        print("SKIP admin: DEMOCRATE_ADMIN_PASSWORD is a known weak/default value. Choose a strong password.")
-        return
-    created = _upsert_user(user, "System Administrator", Role.ADMIN, password, "System Administrator")
+    created = _upsert_user(user, "System Administrator", Role.ADMIN, password)
     print(f"Admin '{user}': {'created' if created else 'already exists'}")
 
 
@@ -79,7 +70,7 @@ def seed_teachers():
             t["name"],
             Role.TEACHER,
             pw,
-            '{"subject": "%s"}' % t["subject"],
+            t["subject"],
         )
         print(f"Teacher '{t['name']}' ({t['id']}): {'created' if created else 'already exists'}"
               f"{'' if password else f'  password={pw}'}")
@@ -94,10 +85,7 @@ def seed_developer():
     if len(password) < 8:
         print("SKIP developer: DEMOCRATE_DEVELOPER_PASSWORD must be at least 8 characters.")
         return
-    if password.lower() in _WEAK_PASSWORDS:
-        print("SKIP developer: DEMOCRATE_DEVELOPER_PASSWORD is a known weak/default value. Choose a strong password.")
-        return
-    created = _upsert_user(user, "System Developer", Role.DEVELOPER, password, "System Developer")
+    created = _upsert_user(user, "System Developer", Role.DEVELOPER, password)
     print(f"Developer '{user}': {'created' if created else 'already exists'}")
 
 

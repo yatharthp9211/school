@@ -16,6 +16,8 @@ __pycache__/
 # others
 developer_key.txt
 *.pdf
+*.db-shm
+*.db-wal
 
 # OS Files
 .DS_Store
@@ -25,3 +27,6 @@ Thumbs.db
 .agents/
 .claude/
 skills-lock.json
+
+# VAPID keys
+*.pem

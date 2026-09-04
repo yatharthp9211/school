@@ -400,5 +400,17 @@ export const api = {
         return fetchApi(API.DEVELOPER_LOGS, { method: 'DELETE' });
     },
 
+
+
+    // ---- Notifications ----
+
+    async getVapidKey() {
+        return fetchApi(API.NOTIFICATIONS_VAPID_KEY);
+    },
+
+    async subscribePush(endpoint, p256dh, auth) {
+        return fetchApi(API.NOTIFICATIONS_SUBSCRIBE, { method: 'POST', body: JSON.stringify({ endpoint, p256dh, auth }) });
+    },
+
 };
 

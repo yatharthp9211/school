@@ -141,6 +141,20 @@ class TeacherRating(Base):
     timestamp = Column(DateTime, default=_utcnow)
 
 
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+    __table_args__ = (
+        UniqueConstraint("user_id", "endpoint", name="uq_push_user_endpoint"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id"), index=True, nullable=False)
+    endpoint = Column(String, nullable=False)
+    p256dh = Column(String, nullable=False)
+    auth = Column(String, nullable=False)
+    created_at = Column(DateTime, default=_utcnow)
+
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 

@@ -1,14 +1,19 @@
 #!/bin/bash
-# Start Democrate backend server on 0.0.0.0:5000 for LAN/mobile access
+# Start Democrate backend on 0.0.0.0 for LAN/mobile access (Termux, phone testing)
 # Usage: ./start_server.sh
 
-# Load environment variables from .env if present
-if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+cd "$(dirname "$0")"
+source venv/bin/activate 2>/dev/null || true
+
+# Ensure required env vars are set (copy .env.example to .env and fill in real values)
+if [ ! -f .env ]; then
+    echo "ERROR: .env not found. Copy .env.example to .env and configure."
+    exit 1
 fi
 
-# Allow dev secret for local development
-export DEMOCRATE_ALLOW_DEV_SECRET=1
+# Run seed first (idempotent) to ensure admin/teacher/developer accounts exist
+python seed.py
 
-# Start server on all interfaces (0.0.0.0) for mobile/LAN access
-uvicorn main:app --host 0.0.0.0 --port 5000
+# Start uvicorn on all interfaces for mobile/LAN access
+echo "Starting server on 0.0.0.0:5000 (accessible from phone on same WiFi)..."
+python -m uvicorn main:app --host 0.0.0.0 --port 5000

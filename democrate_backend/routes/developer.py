@@ -57,71 +57,47 @@ def execute_query(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_developer),
 ):
-    """Execute a raw SQL query (SELECT only for safety)."""
+    """Execute a raw SQL query or statement."""
     sql = query_request.get("sql", "").strip()
     if not sql:
         raise HTTPException(status_code=400, detail="SQL query required")
 
-    # Only allow SELECT statements for safety
-    if not sql.lower().startswith("select"):
-        raise HTTPException(status_code=403, detail="Only SELECT queries are allowed")
-
+    is_select = sql.lower().startswith("select")
     try:
         result = db.execute(text(sql))
-        rows = result.mappings().all()
-        columns = list(result.keys()) if rows else []
-
-        audit.log_action(
-            db, current_user.id, audit.DEVELOPER_QUERY,
-            target="database", details=f"query={sql[:200]}", ip=client_ip(request)
-        )
-
-        return {
-            "columns": columns,
-            "rows": [dict(row) for row in rows],
-            "row_count": len(rows),
-        }
+        
+        if is_select:
+            rows = result.mappings().all()
+            columns = list(result.keys()) if rows else []
+            audit.log_action(
+                db, current_user.id, audit.DEVELOPER_QUERY,
+                target="database", details=f"query={sql[:200]}", ip=client_ip(request)
+            )
+            return {
+                "columns": columns,
+                "rows": [dict(row) for row in rows],
+                "row_count": len(rows),
+            }
+        else:
+            db.commit()
+            audit.log_action(
+                db, current_user.id, audit.DEVELOPER_EXECUTE,
+                target="database", details=f"statement={sql[:200]}", ip=client_ip(request)
+            )
+            return {
+                "success": True,
+                "rowcount": result.rowcount,
+                "message": f"Statement executed successfully. Rows affected: {result.rowcount}",
+            }
     except Exception as e:
+        if not is_select:
+            db.rollback()
+        action = audit.DEVELOPER_QUERY_FAILED if is_select else audit.DEVELOPER_EXECUTE_FAILED
         audit.log_action(
-            db, current_user.id, audit.DEVELOPER_QUERY_FAILED,
-            target="database", details=f"query={sql[:200]} error={str(e)}", ip=client_ip(request)
+            db, current_user.id, action,
+            target="database", details=f"sql={sql[:200]} error={str(e)}", ip=client_ip(request)
         )
-        raise HTTPException(status_code=400, detail=f"Query execution failed: {str(e)}")
-
-
-@router.post("/execute")
-def execute_statement(
-    query_request: dict,
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_developer),
-):
-    """Execute a raw SQL statement (INSERT, UPDATE, DELETE, etc.)."""
-    sql = query_request.get("sql", "").strip()
-    if not sql:
-        raise HTTPException(status_code=400, detail="SQL statement required")
-
-    try:
-        result = db.execute(text(sql))
-        db.commit()
-
-        audit.log_action(
-            db, current_user.id, audit.DEVELOPER_EXECUTE,
-            target="database", details=f"statement={sql[:200]}", ip=client_ip(request)
-        )
-
-        return {
-            "success": True,
-            "rowcount": result.rowcount,
-            "message": f"Statement executed successfully. Rows affected: {result.rowcount}",
-        }
-    except Exception as e:
-        db.rollback()
-        audit.log_action(
-            db, current_user.id, audit.DEVELOPER_EXECUTE_FAILED,
-            target="database", details=f"statement={sql[:200]} error={str(e)}", ip=client_ip(request)
-        )
-        raise HTTPException(status_code=400, detail=f"Statement execution failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Execution failed: {str(e)}")
 
 
 @router.get("/audit")

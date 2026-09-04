@@ -4,22 +4,6 @@
 export const CONFIG = {
     schoolName: "Sanskar Global School",
     logo: "assets/logo.webp",
-
-    // Editorial Prestige palette (matches css/styles.css tokens).
-    theme: {
-        primary: "#0E6B45",      // Emerald
-        primaryStrong: "#0A5536",
-        secondary: "#1B2530",    // Ink
-        accent: "#C6A15B",       // Gold
-        text: "#1B2530",         // Ink
-        textMuted: "#5C6B7A",
-        background: "#FAF7F2",   // Ivory
-        surface: "#FFFFFF",
-        surfaceSunken: "#F4EEE4",
-        hairline: "#E6DDCF",
-        error: "#B3423E",
-    },
-
     // Complaint categories (chosen by the student â€” no server-side AI).
     categories: [
         "Harassment",
@@ -90,33 +74,7 @@ export const API = {
     DEVELOPER_USERS: `${API_BASE}/developer/users`,
     DEVELOPER_STATS: `${API_BASE}/developer/stats`,
     DEVELOPER_LOGS: `${API_BASE}/developer/logs`,
+    NOTIFICATIONS_SUBSCRIBE: `${API_BASE}/notifications/subscribe`,
+    NOTIFICATIONS_VAPID_KEY: `${API_BASE}/notifications/vapid-key`,
 };
 
-// Initialize Tailwind config globally (fallback for utility classes; the
-// signature components use custom CSS driven by css/styles.css tokens).
-if (typeof tailwind !== 'undefined') {
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: {
-                    primary: CONFIG.theme.primary,
-                    "primary-strong": CONFIG.theme.primaryStrong,
-                    secondary: CONFIG.theme.secondary,
-                    accent: CONFIG.theme.accent,
-                    "on-surface": CONFIG.theme.text,
-                    "on-surface-variant": CONFIG.theme.textMuted,
-                    background: CONFIG.theme.background,
-                    "surface-container-high": CONFIG.theme.surfaceSunken,
-                    "surface-container": CONFIG.theme.surface,
-                    "inverse-surface": CONFIG.theme.secondary,
-                    error: CONFIG.theme.error,
-                },
-                fontFamily: {
-                    display: ["Fraunces", "serif"],
-                    body: ["Inter", "sans-serif"],
-                },
-            },
-        },
-    };
-}

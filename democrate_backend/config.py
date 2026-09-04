@@ -70,6 +70,35 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+# ── VAPID keys for Web Push (auto-generated on first run) ───────────────
+# Module-level constants (not settings fields: pydantic models reject extra attrs).
+_VAPID_PRIV = os.path.join(_BASE_DIR, "vapid_private.pem")
+_VAPID_PUB = os.path.join(_BASE_DIR, "vapid_public.pem")
+
+if not os.path.exists(_VAPID_PRIV) or not os.path.exists(_VAPID_PUB):
+    from py_vapid import Vapid
+    vapid = Vapid()
+    vapid.generate_keys()
+    with open(_VAPID_PRIV, "wb") as f:
+        f.write(vapid.private_pem())
+    with open(_VAPID_PUB, "wb") as f:
+        f.write(vapid.public_pem())
+
+from py_vapid import Vapid as _Vapid
+VAPID = _Vapid.from_file(private_key_file=_VAPID_PRIV)
+
+# Browser application-server key: raw uncompressed EC point, base64url (no PEM).
+# This is the form pushManager.subscribe() / applicationServerKey requires.
+from cryptography.hazmat.primitives import serialization
+with open(_VAPID_PUB, "rb") as f:
+    _pub = serialization.load_pem_public_key(f.read())
+_raw = _pub.public_bytes(
+    encoding=serialization.Encoding.X962,
+    format=serialization.PublicFormat.UncompressedPoint,
+)
+import base64
+VAPID_PUBLIC_KEY = base64.urlsafe_b64encode(_raw).rstrip(b"=").decode()
+
 if settings.SECRET_KEY == _DEV_SECRET:
     # The dev key is public (it's in source) — anyone could forge admin JWTs.
     # Refuse to start unless a developer explicitly opts in for local work.
