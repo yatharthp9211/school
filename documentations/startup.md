@@ -1,47 +1,44 @@
 # Democrate Server Startup Guide (Termux / Mobile Testing)
 
-This guide provides the commands needed to run the Democrate application from the `mk2` testing branch on Termux, as well as the rollback instructions if you need to revert to the stable `main` branch.
+This guide provides the commands needed to run the Democrate application from the `master` stable branch on Termux. 
 
-## 1. Test the New Version (`mk2` branch)
+## 1. Test the New Version
 
-Run these commands in your project root folder in Termux to fetch the latest changes, switch branches, and spin up both servers in the background.
+Run these commands in your project root folder in Termux to fetch the latest changes, switch branches, and spin up the servers.
 
 ```bash
-# Fetch latest changes and switch to the mk2 branch
+# Fetch latest changes and pull from master
 git fetch origin
-git checkout mk2
-git pull origin mk2
+git checkout master
+git pull origin master
 
-# Start the Backend Server (Termux uses Linux commands)
-cd democrate_backend
-python -m uvicorn main:app --host 0.0.0.0 --port 5000 &
+# Start the Frontend Server (Nginx)
+cd democrate_frontend
+cp -r * $PREFIX/share/nginx/html/
+nginx
 
-# Start the Frontend Server in the background
-cd ../democrate_frontend
-python -m http.server 8080 &
+# Start the Backend Server (FastAPI)
+cd ../democrate_backend
+source venv/bin/activate
+uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips="*" &
+
+# Start Cloudflare Tunnel in background (To expose it to the internet securely)
+cloudflared tunnel --url http://127.0.0.1:8080 run --token eyJhIjoiOTE2MDFiZGRlNzZiMDYwMTZlNDI1NGRiZTczZWYwOGIiLCJzIjoiRnd0T1FSRzR6N2FFTFZTRi8xczJmenhpODJtdllqdVpSYnIwd054YVRCST0iLCJ0IjoiNmEzN2VhYjEtMzFmZC00ZjhhLWI4ZjYtNTQ1MjQ1MjU5MGNiIn0= &
 ```
 
-*(You can then open your mobile browser and navigate to `http://localhost:8080` or your computer's local network IP).*
+*(You can then access your site securely via your Cloudflare domain: `https://yatharthpandey.dpdns.org`)*
 
 ---
 
-## 2. Rollback to Stable Version (`main` branch)
+## 2. Stopping the Servers
 
-If the new scripts fail before deployment and you need to immediately revert to the stable production code, run these commands to kill the running servers, switch back to `main`, and restart the old version.
+If you need to kill the running servers to update code or rollback:
 
 ```bash
-# Kill the running python servers
+# Kill the running python backend and cloudflare tunnel
 pkill -f uvicorn
-pkill -f http.server
+pkill -f cloudflared
 
-# Switch back to your stable main branch
-git checkout main
-git pull origin main
-
-# Restart the old stable servers
-cd democrate_backend
-python -m uvicorn main:app --host 0.0.0.0 --port 5000 &
-
-cd ../democrate_frontend
-python -m http.server 8080 &
+# Stop Nginx
+nginx -s stop
 ```
