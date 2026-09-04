@@ -72,10 +72,11 @@ nginx
 ```
 
 **Seed the Database (Admin & Developer Accounts):**
-Since this is a fresh setup, you need to create the default database and the initial admin/developer credentials:
+Since this is a fresh setup, you need to create the default database schema and the initial admin/developer credentials:
 ```bash
 cd ~/school/democrate_backend
 source venv/bin/activate
+alembic upgrade head
 python seed.py
 ```
 
