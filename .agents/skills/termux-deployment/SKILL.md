@@ -42,14 +42,14 @@ Start the backend server in the background:
 ```bash
 cd democrate_backend
 source venv/bin/activate
-uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips="*" &
+nohup uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips="*" > uvicorn.log 2>&1 &
 cd ..
 ```
 
 ### 5. Start Cloudflare Tunnel
 Expose the local Nginx instance to the internet securely in the background:
 ```bash
-cloudflared tunnel --url http://127.0.0.1:8080 run --token eyJhIjoiOTE2MDFiZGRlNzZiMDYwMTZlNDI1NGRiZTczZWYwOGIiLCJzIjoiRnd0T1FSRzR6N2FFTFZTRi8xczJmenhpODJtdllqdVpSYnIwd054YVRCST0iLCJ0IjoiNmEzN2VhYjEtMzFmZC00ZjhhLWI4ZjYtNTQ1MjQ1MjU5MGNiIn0= &
+nohup cloudflared tunnel --url http://127.0.0.1:8080 run --token eyJhIjoiOTE2MDFiZGRlNzZiMDYwMTZlNDI1NGRiZTczZWYwOGIiLCJzIjoiRnd0T1FSRzR6N2FFTFZTRi8xczJmenhpODJtdllqdVpSYnIwd054YVRCST0iLCJ0IjoiNmEzN2VhYjEtMzFmZC00ZjhhLWI4ZjYtNTQ1MjQ1MjU5MGNiIn0= > cloudflared.log 2>&1 &
 ```
 
 ## Completion

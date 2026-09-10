@@ -20,10 +20,10 @@ nginx
 # Start the Backend Server (FastAPI)
 cd ../democrate_backend
 source venv/bin/activate
-uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips="*" &
+nohup uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips="*" > uvicorn.log 2>&1 &
 
 # Start Cloudflare Tunnel in background (To expose it to the internet securely)
-cloudflared tunnel --url http://127.0.0.1:8080 run --token eyJhIjoiOTE2MDFiZGRlNzZiMDYwMTZlNDI1NGRiZTczZWYwOGIiLCJzIjoiRnd0T1FSRzR6N2FFTFZTRi8xczJmenhpODJtdllqdVpSYnIwd054YVRCST0iLCJ0IjoiNmEzN2VhYjEtMzFmZC00ZjhhLWI4ZjYtNTQ1MjQ1MjU5MGNiIn0= &
+nohup cloudflared tunnel --url http://127.0.0.1:8080 run --token eyJhIjoiOTE2MDFiZGRlNzZiMDYwMTZlNDI1NGRiZTczZWYwOGIiLCJzIjoiRnd0T1FSRzR6N2FFTFZTRi8xczJmenhpODJtdllqdVpSYnIwd054YVRCST0iLCJ0IjoiNmEzN2VhYjEtMzFmZC00ZjhhLWI4ZjYtNTQ1MjQ1MjU5MGNiIn0= > cloudflared.log 2>&1 &
 ```
 
 *(You can then access your site securely via your Cloudflare domain: `https://yatharthpandey.dpdns.org`)*
